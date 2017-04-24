@@ -1,0 +1,284 @@
+
+
+Things to write
+* Documentation, manual
+* Paper
+* Talk
+* Marketting cruft
+
+
+= Overview =
+
+MAGEEC is a set of components to augment a compiler with the ability
+to make intelligent predictions about which optimizations to run based
+on a machine learner trained against statically extracted features of
+the program under compilation.
+
+Contemporary compilers mostly use a fixed pipeline of passes when
+optimizing. This pipeline can often be configured by the user, either
+at a high level to specify the overall degree of optimization desired,
+or at a low level to enable or disable specific optimizations, however
+for a given invocation of the compiler the pipeline is fixed. The
+pass pipelines for common optimization levels are balanced to work
+well with the widest range of code which may pass through the
+compiler, however for any given piece of code it will not necessarily
+be optimal. In many compilers the user may tune the pipeline for a
+given program or source file, however this is a non-trivial manual
+task which requires a lot of trial and error, and a lot of
+iterations of compilation.
+
+<-- Picture of typical approach taken when compiling -->
+
+From the perspective of the user, it would be reassuring to know
+that the compiler is not missing optimization opportunities. If the
+compiler could be relied on to make more precise optimization decisions
+it could also be possible to simplify the user experience by
+not requiring them to manually disable and enable flags to
+squeeze maximum performance from their code.
+
+From the perspective of the compiler writer, it would be nice to
+avoid having to manually tune the pass pipeline for each new
+processor and CPU. For a given architecture, there can exist a vast
+array of CPUs which vary in the hardware features supported and
+the intricacies of their microarchitecture. (Example of ARM?)
+Tuning the compiler for each of these variants is laborious. 
+
+A further point of interest is that most compilers currently
+optimize for speed, and give less attention to code size, energy,
+or any other interesting metrics. In general optimization can only
+be done with one goal (speed/code size) and it is not possible to
+express more complex optimizations goals such as optimizing for
+energy and code size at the same time, or optimizing for energy
+after a code size target is achieved.
+
+//As a brief test, we did a
+//run of combined elimination optimizing for time and found we could
+//achieve a ?% improvement compared to -O3, however when we did the
+//same but optimized for energy, we found we could achieve a ?%
+//improvement (do this analysis).
+
+If selecting the best compiler configuration can be automated,
+then there are several potential benefits which can be realized.
+  
+* Remove complexity from the compiler to tune optimization
+  pipelines for different ISAs, microarchitectures, CPU features
+  sets, and metrics.
+* Provide the user a more straightforward interface, as well
+  as better performance of resultant programs.
+* Control optimizations at a finer granularity to realize
+  performance improvements which cannot be realized in current
+  compilers (which can only control the pass pipeline at a
+  per-invocation level).
+* Optimize for new metrics such as energy or compilation speed.
+* Provide a more powerful interface to control tradeoffs
+  between different metrics, such as balancing energy and size.
+
+= Current optimization approach =
+
+As it stands, most compilers appear to use a fixed pipeline of
+passes when optimizing. However there has been other work to make
+pass control more powerful. Some of these techniques exist in
+contemporary compilers, however many only appear in research.
+
+* Profile-guided optimization: This is common in many open source
+  and propreitary compilers now. Optimization is tuned based on
+  profiling data from running the program with representative
+  data. The profile provides information about the hot-spots in
+  the code, which can be used to inform the ordering of basic
+  blocks and the ferocity of inlining.
+* <-- MILEPOST -->
+* <-- MAGEEC -->
+* <-- Citations to other authors work -->
+
+= Terminology =
+
+Program Unit - A contiguous part of a program which can be uniquely
+  identifier in both the original source code and the final executable.
+  Examples are modules, functions and possibly loops and basic blocks.
+Feature - A measurable and quantifiable aspect of a program unit, which
+  represents an aspect of the program unit in some way. For example,
+  the number of instructions in a basic block.
+Parameter - A value which can be controlled by some mechanism in the
+  compiler to affect the decree or nature of optimization, with the
+  effect of changing the object code produced by the program. For example:
+  a flag indicating whether the 'dead code elimination' pass should be
+  executed.
+Compiler configuration - A set of parameters used to compile an
+  individual program unit. Multiple units of the same program may
+  use the same configuration of the compiler.
+
+<-- Comparison with original MAGEEC project? -->
+
+= Theory for how MAGEEC works =
+
+MAGEEC automates the selection of optimizations by using a
+machine learner to may key decisions about the pass to
+run and any tunable parameters which may be set. An
+association is learned between features derived from the
+input source code, and the appropriate parameters to use in
+the compilation to build the executable. Like all machine
+learning processes, there is a training stage; where the
+machine learner is fed features and corresponding 'good'
+parameters to build up an association; and a optimizing stage;
+where the machine learner is used with a new, previously
+unencountered program and used to select a set of parameters
+which are likely to produce a good quality output executable.
+
+<-- High level features of MAGEEC -->
+<-- High level diagram of gather+train with compiler -->
+
+MAGEEC itself is not a machine learner, and is instead a
+set of components and utilities which allow a compiler to
+be intrumented with some 'machine-learning' capabilities. This
+includes:
+
+* An interface to derive static features from an input program
+  (GCC feature extraction)
+* A mechanism to drive the compiler to exercise various
+  parameters during the gather phase. (GCC wrapper)
+* A file format to record features, compilations, and results
+  in a centralized place. (SQLite)
+* An interface to a number of machine learners, and the
+  machine learners themselves.
+* Tools and scripts to access the file, and drive the training
+  and optimization process.
+
+<-- High level diagram of MAGEEC components -->
+<-- Design of MAGEEC in general -->
+
+We now describe each of these components in more detail, and
+their current implementations.
+
+* Feature extraction (interface + gcc plugin)
+* Compiler driver (interface + gcc wrapper)
+* File format (SQLite database)
+* Machine learners (interface + C5.0 + 1NN)
+* Ma
+
+<-- Workflow -->
+
+* Gather
+* Training
+
+<-- Experimentation -->
+
+* Features
+* Machine learners
+* Optimizing for size
+* Optimizing for energy
+* NEALE
+
+
+
+
+
+
+Unlike other work in this area, the extracted features are
+static features derived from the input source code, rather
+than dynamic features derived from an execution of a
+program. This has the advantage that features can 
+
+are made based on static features 
+
+MAGEEC automates the selection of optimizations by using a
+machine learner to make key decisions about the optimizations
+to run, based on a number of statically derived features of
+the program. It is designed to either integrate with the
+compiler, or be included in a wrapper around the compiler
+driver.
+
+WORKFLOW
+
+= Comparison with existing techniques = 
+
+* PGO
+* Static vs dynamic features
+* Production ready (TM)
+
+= MAGEEC features =
+
+* Cross-platform (in theory)
+* Flexible to different compilers (GCC implemented)
+* Flexible to different languages (C, C++, Fortran implemented)
+* Integrated or standalone (closed source compilers)
+* Library design
+* Based on flags or compiler internal decisions
+* Open source
+* Plugin interface for different machine learners
+
+= MAGEEC design =
+
+There are a few components to the whole system:
+
+HIGH LEVEL COMPONENTS
+
+* A feature extractor
+  This takes the input source file and extracts interesting
+  features which quantity each of the program units which
+  comprise the file. The feature extractor can be integrated
+  in the compiler, or part of a standalone tool.
+* A compiler stub or wrapper
+  When gathering, this is used to record the parameters
+  which make up the compiler configuation
+  When optimizing, this uses extracted features to
+  query the machine learner to make decisions about
+  the value which compilation parameters should take.
+
+MAGEEC DESIGN
+
+MAGEEC is based very strongly around its file format which is
+an SQLite database. The database holds intermediate data during
+gathering 
+
+MAGEEC COMPONENTS
+
+FEATURES
+
+
+
+
+MAGEEC is based around a 
+MAGEEC itself is made up of a few components, which are as
+follows:
+
+* The core MAGEEC library
+  This library provides an interface to the majority of
+  the functionality. It is used by the feature extractor
+  MAGEEC database. 
+* A standalone feature extractor
+
+
+* Important terms
+* Combined elimination
+* Experiments
+* Results
+* Limitations
+* Future work
+* Cross platform
+* Multi-compiler
+* Based on flags or other
+* Multi-language (gfortran, gcc, g++)
+* NEALE/Hartree systems
+* Modules/Libraries
+* Gathering
+* Adding results + training
+* Workflow
+* Optimizing
+* Benchmarks (mantevo)
+* Feature quality
+* Diverse feature sets
+* Tools (gcc driver, standalone tool, feature extractor, scripts)
+  * Documentation of tools and their flags
+* Considerations for benchmarking on supercomputers
+* Terms (Features/Parameters/Compilation/Program unit)
+* SQLite as an intermediate format
+  * Minimize intermediate files
+  * Structured, easy to debug (sqlitebrowser, sqlite3)
+  * Simple conceptual model
+  * Multiprocess access and good performance
+* Allinea MAP
+* Machine learners
+  * C5.0
+  * 1NN
+* Design decisions
+* Open source
