@@ -269,9 +269,66 @@ The features extracted by the GCC feature extractor are as follows:
 
 == Compiler driver ==
 
-Interface + GCC wrapper
+In order to drive the training and optimization process, there needs
+to be a mechanism to control the parameters provided to the compiler.
+When training, it needs to be possible to run the compiler under a
+number of controlled configurations, and record each of these
+compilations in the MAGEEC database for later use. During optimization
+it needs to be possible to call out to MAGEEC to make decisions using
+a trained machine learner and then use these decisions to control
+compilation parameters.
 
-== File format ==
+=== Driver interface ==
+
+MAGEEC offers an interface, which allows the compiler, or a wrapper
+controlling the compiler to store a record of each program unit
+being compiled, the features associated with that program unit, and
+parameters describing the configuration of the compiler for that
+compilation. The interface takes all of the information describing
+the compilation of a program unit; the features and parameters
+involved in the compilation, and returns a unique identifier for
+that compilation. Later, results will be associated with the
+compilation, and then there will be enough information to train
+a machine learner.
+
+For optimization, an interface is also offered which allows the driver
+to use a previously trained machine learner to make decisions about
+parameters. The driver can query a machine learner with a set of
+feature, and receive a decision. It can then use this decision to control
+the compilation of a program unit.
+
+== GCC wrapper driver ==
+
+MAGEEC offers one concrete interface to drive GCC for training and
+optimization purposes which takes the form of a GCC wrapper. This
+driver is a wrapper around the gcc/gfortran/g++ drivers, which
+intecepts and controls the optimization flags passed to it.
+
+When training, the driver tracks the optimization flags being used
+with the driver and records a compilation in the database for each
+program unit.
+
+When optimizing, the driver strips optimization flags and instead
+replaces the flags with flags derived through multiple calls out
+to the MAGEEC interface to the machine learner. It uses previously
+extracted features to inform this process.
+
+Because the GCC wrapper driver works externally to the compiler, it
+does not require any invasive changes to the compiler in order to
+control the passes. It also supports multiple version of GCC easily
+and can support Fortran and C++ code through the same driver.
+Additionally because it uses the public documented interface to the
+compiler, it is more stable as it cannot create broken pass pipelines <-- WUT? -->
+
+A disadvantage of the GCC driver is that it is only able to make decisions on
+a per-module level. If the driver instead operated internally to GCC it could
+be possible to enable or disable passes on a per function basis. This
+severely limits the optimization potential.
+
+<-- High level diagram of compilation process for gather + optimize -->
+<-- Diagram of GCC wrapper driver process -->
+
+== MAGEEC File Format ==
 
 SQLite database
 
