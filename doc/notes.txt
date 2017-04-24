@@ -65,13 +65,15 @@ then there are several potential benefits which can be realized.
   sets, and metrics.
 * Provide the user a more straightforward interface, as well
   as better performance of resultant programs.
-* Control optimizations at a finer granularity to realize
-  performance improvements which cannot be realized in current
+* Control optimizations at a finer granularity (file, module) to
+  realize performance improvements which cannot be realized in current
   compilers (which can only control the pass pipeline at a
   per-invocation level).
 * Optimize for new metrics such as energy or compilation speed.
 * Provide a more powerful interface to control tradeoffs
   between different metrics, such as balancing energy and size.
+
+<-- Diagram of more ideal optimization approaches (module and function level) -->
 
 = Current optimization approach =
 
@@ -92,22 +94,20 @@ contemporary compilers, however many only appear in research.
 
 = Terminology =
 
-Program Unit - A contiguous part of a program which can be uniquely
+* Program Unit - A contiguous part of a program which can be uniquely
   identifier in both the original source code and the final executable.
   Examples are modules, functions and possibly loops and basic blocks.
-Feature - A measurable and quantifiable aspect of a program unit, which
+* Feature - A measurable and quantifiable aspect of a program unit, which
   represents an aspect of the program unit in some way. For example,
   the number of instructions in a basic block.
-Parameter - A value which can be controlled by some mechanism in the
+* Parameter - A value which can be controlled by some mechanism in the
   compiler to affect the decree or nature of optimization, with the
   effect of changing the object code produced by the program. For example:
   a flag indicating whether the 'dead code elimination' pass should be
   executed.
-Compiler configuration - A set of parameters used to compile an
+* Compiler configuration - A set of parameters used to compile an
   individual program unit. Multiple units of the same program may
   use the same configuration of the compiler.
-
-<-- Comparison with original MAGEEC project? -->
 
 = Theory for how MAGEEC works =
 
@@ -124,8 +124,74 @@ where the machine learner is used with a new, previously
 unencountered program and used to select a set of parameters
 which are likely to produce a good quality output executable.
 
-<-- High level features of MAGEEC -->
-<-- High level diagram of gather+train with compiler -->
+<-- High level diagram of the process (with MAGEEC-instrumented compiler) -->
+
+= High level features of MAGEEC =
+
+MAGEEC using static features, which are derived ahead of time from the
+input program. This has some advantages and disadvantages compared to
+other approaches.
+
+Advantages:
+* Test programs do not have to be recompiled to receive a benefit. Interactive
+  compilation techniques such as combined elimination require a large number
+  of recompilation runs, and even just doing a single profiled run to
+  derived dynamic features can be prohibitively difficult if the program is
+  large or cannot easily be instrumented.
+* Measure static features is simpler than measuring dynamic features. Dynamic
+  features may not be precisely measureable, may depend on the environment,
+  and require a more complex build stage.
+* Measuring static features is quicker. The effect on compilation time can
+  be minimized with static features, as they can be very easily derived from
+  the source code or intermediate representation. This makes deployment
+  far easier.
+* In some cases it may not be possible to instrument and measure dynamic
+  features. For example, an embedded system may not have enough memory
+  for the overhead of instrumentation, or it may not be possible to
+  measure some features on an embedded systems
+  <-- Example (limitations in debug interface) -->
+
+Disadvantages:
+* Static features cannot express the effects of the input data on the
+  program. Two program could have identical features, but exhibit very
+  different performance characteristics depending on the data provided
+  to it. Indeed, one program can also exhibit very different performance
+  depending on the data provided to it. This can be mitigated, as the
+  features of the program will often hint at the type of data used with
+  it, however the problem cannot be mitigated.
+* Static features are less representative of the input program. This
+  relates to the previous point. Dynamic features are likely to be
+  more representative of the input program than static features. This
+  means that static features are likely to be far less effective than
+  using dynamic features. It also means more training data is likely
+  to be needed.
+* If static features are derived too easier, they may be skewed by the
+  structure of the input code. <-- Not really a problem -->
+
+MAGEEC is open source under the GPL license. The aim is that by doing
+this MAGEEC can be freely implemented in as wide range of compilers as
+possible.
+
+The design of MAGEEC makes it possible to use a variety of machine
+learners through a common interface, and makes it possible to use
+both command-line driven proprietary compilers, and open source
+compilers. The interface to MAGEEC can either be a wrapper around
+the compiler (ideal for a proprietary compiler), or can integrate
+in the compiler itself, possibly through a plugin interface. Deeper
+integration beneficial as it may allow compilation controlling
+decision to be made at a finer granularity than program or module
+level.
+
+== Comparison with MAGEEC ==
+
+The original MAGEEC was aimed at optimizing for energy on embedded
+systems. The aim of this updated version was to also target high
+performance application and also to improve the workflow to make
+the optimization process more robust.
+
+= MAGEEC components =
+
+<-- High level diagram of gather+train with compiler, possibly later? (workflow?) -->
 
 MAGEEC itself is not a machine learner, and is instead a
 set of components and utilities which allow a compiler to
@@ -148,6 +214,66 @@ includes:
 
 We now describe each of these components in more detail, and
 their current implementations.
+
+== Feature extraction ==
+
+=== Interface ===
+
+Feature extraction involves taking an input source program, and
+outputting a set of features for each of the individual
+program units in the program. Each source file can produce
+multiple sets of features for each different program unit in 
+the file. So the module will produce a feature set, and each
+function could produce its own feature set. It is even feasible
+that feature could be generated for each basic block or loop.
+
+MAGEEC provides an interface to create a set of features. How
+exactly the features are extracted is up to the program doing the
+feature extraction, and the features which are extracted is also
+at the whim of the feature extractor. The limitations placed by
+MAGEEC are that the type of the features must be one of a set of
+known types (this set of types is common with the types which
+the machine learners can handle), and a given extracted feature
+is consistently identified by the name numerical identifier.
+
+The interface to MAGEEC allows a feature extractor to insert a
+new set of features into the file for a program unit, and
+receive a unique identifier for those features back.
+
+=== GCC plugin ===
+
+As well as the interface to the feature extractor, a feature
+extractor plugin in also provided for the GCC compiler. This
+plugin can be provided as a plugin to gcc, and used to
+extract module and function features from the program.
+
+This plugin takes the input program and outputs a .csv file
+identifing an individual program unit in the source code, associating
+it with the unique identifier of the feature set for that
+program unit.
+
+The benefit of the GCC feature extractor is that it allows feature
+extraction to be performed on C, C++ and Fortran code without
+requiring a compiler-specific feature extractor to be written.
+Provided code can be built with GCC, feature extraction can be
+achieved. This makes it ideal for instrumenting propreitary
+compilers.
+
+The features extracted by the GCC feature extractor are as follows:
+
+<-- List of features -->
+<-- Description of features -->
+
+<-- High level Diagram of feature extraction process -->
+<-- Diagram of feature extraction plugin process -->
+
+== Compiler driver ==
+
+Interface + GCC wrapper
+
+== File format ==
+
+SQLite database
 
 * Feature extraction (interface + gcc plugin)
 * Compiler driver (interface + gcc wrapper)
