@@ -325,11 +325,57 @@ a per-module level. If the driver instead operated internally to GCC it could
 be possible to enable or disable passes on a per function basis. This
 severely limits the optimization potential.
 
+<-- Flags vs internal pass decisions -->
 <-- High level diagram of compilation process for gather + optimize -->
 <-- Diagram of GCC wrapper driver process -->
 
 == MAGEEC File Format ==
 
+Internally MAGEEC uses an SQLite database as an intermediate format.
+This MAGEEC database is the main file format, and is used to record
+the intermediate stages of training. It holds extracted features,
+records of each compilation and the accompanying parameters and features
+for it, results, trained machine learners, and various debug information.
+
+When the feature extractor is run, features are added to the database,
+and a handle to an entry in the database is returned. Likewise,
+when a program unit is compiled with a with a set of parameters,
+a compilation is recorded in the database an an identifier to it
+is returned. This compilation can then have a result value associated
+with it later.
+
+There are a few reasons for using an SQLite database as an
+intermediate format:
+
+* The data by its nature contains relations which make it conducive
+  to using a database. By using a database, this relations can be
+  maintained and enforced.
+* The database is a familiar conceptual model which is easier to
+  understand.
+* sqlitebrowser can be used to query the database manually, making
+  it easier to debug and manually fix if it is ever necessary.
+* SQLite allows multiple processes to read/write the same file,
+  which is useful for parallelizing the training process for
+  performance. Doing this with flat files would be more complex,
+  and require reimplementing functionality already offered by
+  SQLite.
+* SQLite is quite high performance, and offers resilience against
+  corrupt data out of the box.
+
+The main disadvantage to using SQLite is that it adds some
+complexity to the interfaces, and requires more boilerplate code
+to interface than a simpler flat file solution would.
+
+=== Database structure ===
+
+Below is a description of the file format structure and the
+associated relations.
+
+
+
+
+
+Internally MAGEEC using i
 SQLite database
 
 * Feature extraction (interface + gcc plugin)
@@ -431,6 +477,7 @@ follows:
 * A standalone feature extractor
 
 
+* Justifications for decisions
 * Important terms
 * Combined elimination
 * Experiments
