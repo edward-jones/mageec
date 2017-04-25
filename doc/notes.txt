@@ -371,18 +371,166 @@ to interface than a simpler flat file solution would.
 Below is a description of the file format structure and the
 associated relations.
 
+<-- Database structure diagram -->
 
+== Machine learner interface ==
 
+The machine learner interface provides the capability to train
+a machine learner given a set of compilations and their results,
+as well as make decisions using a previously trained machine learner.
 
+When training, MAGEEC provides the machine learner with all of the
+results data for all of the compilations which have been performed.
+This associates a set of inputs features compiled using a particular
+set of parameters to the compiler, with a single output result
+value. The interface also provides a set of parameters which the
+user may wish to make decisions on, and which therefore forms the set
+of parameters which the machine learner should train to make a
+decision against.
 
-Internally MAGEEC using i
-SQLite database
+The machine learner can use the dump of data however it likes.
+However, the end result of the training process is a single binary
+blob which is opaque to MAGEEC and the MAGEEC file format, but
+can be deciphered by the machine learner at a later time when it
+is required to make a decision. This binary blob is returned by
+the machine learner and then stored by MAGEEC in the database for
+use later.
 
-* Feature extraction (interface + gcc plugin)
-* Compiler driver (interface + gcc wrapper)
-* File format (SQLite database)
-* Machine learners (interface + C5.0 + 1NN)
-* Ma
+When optimizing, the blob for the machine learner is retrieved
+and an instance of the machine learner is instantiated. The
+user of the machine learner can then query the machine learner
+to make decisions about parameters which the machine learner
+encountered when training. The machine learner is provided the
+decision to make, as well as a set of features to use in order
+to make the decision. The machine learner can choose to make a
+decision, or it can refuse, leaving it up to the user to then
+make the decision itself.
+
+The features provided to the machine learner are made up of a
+unique identifier, as well as a 'type'. The unique identifier
+is guaranteed by the feature extractor to unique identify the
+same feature every time, and the type is one of a number of
+types specified by MAGEEC.
+
+The parameters which are provided to the machine learner also
+have a unique identifier which is guaranteed to identify the
+same parameter in the compiler which is being used. The
+types of the parameters is also an identifier for a type specified
+by MAGEEC.
+
+<-- Feature types, parameter types, decisions, etc? -->
+
+Currently, there is no ability to do incremental learning.
+
+<-- No ability to do incremental learning -->
+<-- Diagram of machine learner inputs and outputs for train + optimize -->
+
+The machine learning interface is used by the standalone tool
+in order to train a database based on generated results, and
+it is used by the GCC wrapper driver in order to make decisions
+during compilation.
+
+In MAGEEC there currently exist two machine learners, a machine learner
+based on the C5.0 classifier, and a machine learner based on a one
+nearest-neighbor search. These are built as libraries which the
+GCC wrapper then links against.
+
+A user can create a new machine learner, provided it implements the
+machine learner interface. It is then possible to use this machine
+learner as a plugin to the standalone tool and GCC wrapper, by
+building the machine learner as a dynamic library which the
+tools can link against.
+
+=== C5.0 Machine learner ===
+
+C5.0 is a machine learning which creates a classifier tree based on
+the input features. For MAGEEC, a C5.0 classifier tree is created
+for each decision which may be made (corresponding to a parameter
+in the compilation). The machine learner is provided the best
+result for each distinct set of features, and it uses these
+to build a classification tree for each parameter. The classification
+tree for each of the parameters are concatenated together and
+stored in the blob.
+
+When a decision must be made, the appropriate classifier tree is
+found, and the features for the program unit are used to determine
+the classification for that decision. For a boolean decision, the
+resulting decision could be 'true', 'false', or 'native' if the
+machine learner is not able to make a decision.
+
+<-- Diagram of classifier trees for MAGEEC -->
+<-- Diagram of use of a classifier tree for MAGEEC -->
+
+Advantages of C5.0 are that the interface is straightforward
+and the decision trees are human readable.
+
+=== 1-NN Machine learner ===
+
+One nearest neighbor is a conceptually very simple classification
+method. Each feature set form a point in n-dimensional space, where
+each feature is mapped to an individual axis. Each feature set 'point'
+is associated with a parameter set, which is the parameter set for
+the best result for that feature set in the results data. When a
+decision needs to be made, the closest feature set to the input
+set is found in the training data, and the decision is made based
+on the parameters in that closest point.
+
+1-NN is a very simply classification technique, and is very easy
+to understand. 
+
+<-- Diagram of 1-NN classification for MAGEEC -->
+
+== Toolings ==
+
+As well as the key MAGEEC interfaces and components, there are also
+a few tasks which are achieved through tooling and python scripts.
+
+=== Standalone MAGEEC tool ===
+
+This tool exists to do a few tasks which can't be done by either
+the feature extractor or compiler driver. This includes; adding
+results into the database, training a database using a machine
+learner; and creating and merging databases files. It is a simple
+command line tool.
+
+=== Feature extraction script ===
+
+This script exists to build and feature extract a program using the
+GCC feature extractor plugin. It simplifies the interface to the
+plugin, and automatically handles autoconf and CMake build systems.
+
+=== Combined elimination script ===
+
+This script performs the combined elimination process as described in
+<-- Citation -->. This script exists in order to do an iterative
+search towards the best combination of compilation flags for a
+benchmark, which can be used to effectively train many machine learners.
+The naive way to find good flag combinations is to do a random
+search, however combined elimination finds more optimal results in
+far fewer runs. Even compared to doing a fractional factorial design
+combined elimination is much more effective.
+
+The combined elimination process starts with all flags enabled,
+and then attempts to disable flags in groups in order to find a
+more optimal set of flags for a given program. It has been shown
+to be more effective than other iteractive compilation techniques.
+
+<-- Combined elimination diagram -->
+
+Combined elimination is used by MAGEEC primarily for finding good
+data points for the training process.
+
+== The MAGEEC library ==
+
+The various interfaces exposed by MAGEEC, and used by the GCC
+feature extractor plugin, GCC wrapper driver and standalone tool
+are all implemented in a core library which the MAGEEC tools,
+and other software which wishes to use with MAGEEC can link
+against. By including this in a library, it means that integration
+with MAGEEC can be embedded into other compilers. This could
+be used to perform feature extraction from within another
+compiler, or to allow MAGEEC to alter the internal pass
+sequences in a compiler.
 
 <-- Workflow -->
 
