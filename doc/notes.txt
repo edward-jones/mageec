@@ -532,12 +532,96 @@ be used to perform feature extraction from within another
 compiler, or to allow MAGEEC to alter the internal pass
 sequences in a compiler.
 
-<-- Workflow -->
+== Workflow ==
 
-* Gather
-* Training
+There are two phases to using MAGEEC. Gathering and training a
+machine learner, and optimizing a program based on a trained
+machine learner.
 
-<-- Experimentation -->
+=== Gathering and training ===
+
+The gathering process involves repeatedly building a number of
+benchmarks under slightly different configurations of the
+compiler. The resultant binaries can then be measured somehow,
+and the results of that measurement can be associated
+with the compilations of each of the program units which make
+up the executable.
+
+The aim of the gathering process is to find sets of parameters
+which minimize the cost function (with the aim to beat the
+default configurations of the compiler), and there are a few ways
+to find this set.
+
+The ideal approach would be to do an exhaustive search of the
+parameter space to find the absolute best set of flags. If
+possible, this would be ideal as you can guarantee that the
+best result has been found. The problem with this approach
+is that it is simply not possible to do an exhaustive search
+of the parameter space. For a compiler such as GCC where there
+are approximately 100 boolean optimization flags which can be
+configured, there are 2^100 combinations which would need to
+be tested.
+
+Since an exhaustive search is not feasible, an alternative is
+to only search a subset of the full search space. There are
+several observation one might be able to make in order to
+cut down the search space considerably:
+
+1) In general, configurations with most flags on do better than
+   configurations with less flags. It is extremely unlikely
+   that enabling only a single flag would be better than -O3
+2) As a first approximation, most flags can be treated
+   independently.
+3) Many flags will have very little effect either way, and can
+   be excluded
+
+Taking factors like this into account, it is possible to
+trim down the search space considerably. Using techniques such
+as fractional factorial design can be used to only test
+a subset of combinations. In some cases, this is viable, however
+for many programs used in the training process, compilation
+times may be sufficiently high that it is worth looking for
+better solutions.
+
+In order to minimize the number of tests, incremental compilation
+can be used in order to hill-climb towards better solutions.
+There are various techniques that can be used for this, however
+combined-elimination is straightforward and has been demonstrated
+to find promising results.
+
+Incremental compilation suffers from the risk that only a local
+minima is found, however provided this local minima is still
+an improvement over the default compiler behavior, this is
+a trade-off worth making.
+
+Another major component to the gathering process is the set
+of benchmarks which are used. The benchmarks needs to be
+representative of the types of programs which will be used
+with the compiler. They also need to be varied, so that the
+feature sets gather cover as many potential input programs as
+possible, and most importantly they need to be numerous.
+Machine learning requires a glut of data to produce reliable
+results, so having a lot of benchmarks containing a lot of
+modules and functions is important.
+
+After the benchmarks have been run under a large number of
+configurations, and they have been measured and their results
+gathered into MAGEEC, they can be trained. Training involves
+invoking the machine learner to produce a training blob
+which is stored and used at a later point.
+
+=== Optimizing ===
+
+In comparison to gathering and training, the optimizing phase is
+much simpler. Here a new program has its features extracted, and
+these features are then passed to MAGEEC along with decisions
+which need to be made. The decisions about parameters are made,
+and this is used to inform the compilation of the program.
+
+The result should be a binary which is more optimal than would
+be produced by the default compiler.
+
+== Experimentation ==
 
 * Features
 * Machine learners
