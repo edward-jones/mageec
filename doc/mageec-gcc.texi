@@ -35,8 +35,99 @@ Texts. A copy of the license is included in the section entitled
 This document describes the MAGEEC GCC wrapper
 
 @menu
+* Overview::
 * GNU Free Documentation License::
 @end menu
+
+@node Overview
+@section Overview
+
+The MAGEEC GCC wrapper aims to wrap around the gcc, gfortran
+and g++ drivers in order to intercept and control the pass
+flag provided to the drivers using MAGEEC. The wrapper is
+used in a couple of ways. One way it is used is to record
+information about program units as they are compiled, and
+the other ways is to update the optimization flags being used
+to compile programs units as they pass through the compiler.
+
+The wrapper is invoked instead of the original command, and
+after interacting with MAGEEC, and potentially making changes
+to the compilations flags, the original command is invoked to
+actually perform the compilation. In the process, the wrapper
+inserts information about the compilation of each program unit
+into the database, recording the features associated with
+the program unit as well as the parameters used to
+compile it.
+
+@node Design
+@section Design
+
+The design of the wrapper is pretty straightforward. It
+takes the original command, potentially replaces optimization
+flags with flags derived by MAGEEC, records each program unit
+being compiled and the flags in the database, and then invokes
+the original compiler command in order to perform the
+compilation of each program unit.
+
+The wrapper can be used with the gcc, gfortran and g++ drivers,
+and can also be used with the various mpi* drivers which are
+used as part of mpi. Regardless of the command word used to
+actually invoke the compiler, it is expected that the
+invoked compiler will be based on gcc and therefore
+understands gcc command line flags. There are various
+entrypoints to the MAGEEC wrapper, all of which are prefixed
+with mageec-*, in order to invoke the underlying compiler,
+the wrapper simply strips the 'mageec-' from the front of
+the command and invokes the new command name.
+
+Various wrapper commands are provided by MAGEEC, such as
+mageec-gcc, however new wrappers for other commands can
+be created by copying or symlinking to the mageec-gcc
+binary with the corresponding command name prefixed with
+mageec-*. For example, if one had a gcc cross compiler such
+as arm-none-eabi-gcc, a copy of the wrapper could be created
+called mageec-arm-none-eabi-gcc.
+
+The wrapper takes some additional inputs, and produces some
+extra outputs on top of the normal inputs and outputs produced
+by the original gcc command. The main extra input is the
+csv file containing the features extracted during the
+feature extraction phase. This file contains the features for
+various programs, which should include features for the
+files being passed to the wrapper.
+
+The additional output produced by the wrapper is a file
+containing a unique identifier identifier each of the
+program units in the input programs. This is a csv file which
+has a similar format to those stored in the features file.
+
+The wrapper also takes the database as an argument, which
+is where compilations of each program unit are stored.
+
+@c @image Diagram of operation of the gcc wrapper during gather and optimize
+@c @image Diagram of the output format
+
+@node Usage
+@section Usage
+
+There are two modes which the gcc wrapper can operate in; gather mode, and
+optimize mode. Gather mode, records the optimizations flags used to
+compile a program, whereas optimize mode strips the optimization
+flags and then produces new optimization flags after querying the
+machine learner to determine whether to enable or disable each
+flag in turn. The required flags varies depending on which mode
+it is running in.
+
+@c -fmageec-help
+@c -fmageec-version
+@c -fmageec-database-version
+@c -fmageec-framework-version
+@c -fmageec-debug
+@c -fmageec-sql-trace
+@c -fmageec-mode=
+@c -fmageec-database
+@c -fmageec-features
+@c -fmageec-out
 
 @node GNU Free Documentation License
 @chapter GNU Free Documentation License
