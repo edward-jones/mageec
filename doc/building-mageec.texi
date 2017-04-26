@@ -1,0 +1,194 @@
+\input texinfo
+@setfilename mageec.info
+@afourpaper
+@settitle MAGEEC
+@paragraphindent 0
+
+@copying
+This manual is for MAGEEC.
+
+Copyright @copyright{} 2013-2015 Embecosm Limited and University of Bristol.
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts. A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+@end quotation
+@end copying
+
+@titlepage
+@title MAGEEC
+@subtitle MAchine Guided Energy Efficient Compilation
+@author Simon Cook
+@author Edward Jones
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@node Top
+@top Scope of this Document
+This document describes how to build MAGEEC @emph{MAchine Guided Energy
+Efficient Compilation}.
+
+@menu
+* Prerequesites::
+* MAGEEC gcc plugin dependencies::
+* MAGEEC doxygen dependencies::
+* MAGEEC user documentation dependencies::
+* Building MAGEEC::
+* Build options::
+* Build targets::
+* GNU Free Documentation License::
+@end menu
+
+@node Prerequesites
+@section Prerequesites
+
+There are a number of prerequesites that are needed to build all
+of the components of MAGEEC. There are several components which
+are built and installed as part of MAGEEC; the MAGEEC core library,
+GCC plugin, GCC wrapper, C5.0 and 1NN machine learners,
+documentation and scripts. These components have various
+prerequesites.
+
+The two main prerequesites are:
+@itemize
+@item
+CMake - To build the build files
+
+@item
+GCC/Clang - To build the libraries a C++11 compiler is necessary
+
+@item
+SQLite3 - MAGEEC uses sqlite as a file format, so sqlite is
+required, along with the development headers.
+
+@end itemize
+
+A couple of the components have additional dependencies:
+
+@node MAGEEC gcc plugin dependencies
+@subsection MAGEEC gcc plugin dependencies
+
+@itemize
+@item
+GCC plugin development headers - These headers are provided in a 
+development package for GCC. The headers define the plugin interface
+to GCC. Any version of 4.5.0 includes the plugin headers.
+@end itemize
+
+
+@node MAGEEC doxygen dependencies
+@subsection MAGEEC doxygen dependencies
+
+@itemize
+@item
+Doxygen - The MAGEEC C++ source code is annotated with Doxygen
+comments. Doxygen is required to build API documentation.
+@end itemize
+
+@node MAGEEC user documentation dependencies
+@subsection MAGEEC user documentation dependencies
+
+@itemize
+@item
+Texinfo - This is required in order to build all of the user
+documentation
+
+@c other packages for pdf/html documentation?
+@end itemize
+
+@node Building MAGEEC
+@section Building MAGEEC
+
+At the most basic level, one can build MAGEEC with the following commands
+using cmake and make:
+
+@example
+cd path/to/mageec
+cd ..
+mkdir build
+mkdir install
+cd build
+cmake ../mageec -DCMAKE_INSTALL_PREFIX=../install
+make
+make install
+@end example
+
+@node Build options
+@subsection Build options
+
+There are some options that can be provided to CMake to configure
+the build using the -D flag. By default all of these options
+are enabled.
+
+@itemize
+@item
+-DMAGEEC_DEBUG - Add debug information, enable -Wall and enable
+debug output printing.
+
+@item
+-DMAGEEC_WITH_USER_DOCS - Enable user documentation for
+the 'doc' build target.
+
+@item
+-DMAGEEC_WITH_DESIGN_DOCS - Enable design documentation for
+the 'doc' build target.
+
+@item
+-DMAGEEC_WITH_DOXYGEN - Enables doxygen generation for the
+'doc' build target.
+
+@item
+-DMAGEEC_WITH_GCC_FEATURE_EXTRACT_PLUGIN - Enable building of
+the GCC feature extractor as part of the default build target.
+
+@item
+-DMAGEEC_WITH_GCC_DRIVER - Enable building of the GCC
+wrapper driver as part of the default build target.
+@end itemize
+
+@node Build targets
+@subsection Build targets
+
+As well as various build options, there are also some custom
+targets which can be built.
+
+The default build target does not build documentation. Instead
+there are a number of custom targets which can be used to
+build the documentation.
+
+@itemize
+@item
+info - Builds info files for user and design documentation
+@item
+html - Builds html documents for user and design documentation
+@item
+pdf - Builds pdf documents for user and design documentations
+@item
+user-guide-info - Builds info version of the user guide
+@item
+user-guide-html - HTML version of the user guide
+@item
+user-guide-pdf - PDF version of the user guide
+@item
+design-info - Builds info version of the design document
+@item
+design-html - HTML version of the design document
+@item
+design-pdf - PDF version of the design document
+@end itemize
+
+After any of the above targets are build, building the 'install'
+target will install all build documentation.
+
+@node GNU Free Documentation License
+@chapter GNU Free Documentation License
+@include fdl-1.3.texi
+
+@bye
