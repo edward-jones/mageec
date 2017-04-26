@@ -35,8 +35,145 @@ Texts. A copy of the license is included in the section entitled
 This document describes the MAGEEC Feature Extraction plugin.
 
 @menu
+* Overview::
+* Design::
+* Features::
+* Usage::
+* Usage notes::
+* Example usage::
 * GNU Free Documentation License::
 @end menu
+
+@node Overview
+@section Overview
+
+The MAGEEC feature extractor plugin is a plugin to perform
+extraction of static features from C, C++ and Fortran source code
+by using GCC. It is an open source plugin which extracts the
+features from the GCC internal gimple representation.
+
+@node Design
+@section Design
+
+The feature extractor is a pass which is injected into the
+normal GCC pass sequence. This pass runs early in the pass
+pipeline before other optimization passes have run, and
+farms features for functions and modules in the program.
+
+There are two groups of features which are extracted by the
+plugin, function-level features and module-level features.
+Function level features describe properties of individual
+functions, and module level features describe properties
+of the module, but 
+
+The plugin integrates with MAGEEC, storing extracted
+features in the MAGEEC database. The output from the
+feature extractor is a csv file containing an identifier
+of an individual program unit in the program, as well
+as the identifier of the feature set for that program
+unit in the database.
+
+Currently, the features extracted by the plugin are all
+integer features. The types of the features which could
+be extracted by MAGEEC are limited to the features which
+can be intepreted by one of the machine learners. There is
+no point in extracting features which a machine learner
+cannot understand.
+
+@c @image Picture of integration with pass pipeline
+@c @image Picture of the integration with MAGEEC
+@c @image Picture of the output file format
+
+@node Features
+@section Features
+
+Below is a list of the function features and module
+features which are extracted by the feature extractor.
+Each of these is assigned a unique identifier.
+The module features are primarily derived from the
+function features using a number of reduction functions,
+including max/min/mean/range.
+
+@c List of all of the features
+
+@node Usage
+@section Usage
+
+The plugin is found in the library directory of the
+installation of MAGEEC. It is used by providing the
+feature extractor library as a plugin to the gcc, g++ or
+gfortran drivers through the -fplugin option.
+
+gcc -fplugin=libgcc_feature_extract.so
+
+Arguments are provided to the plugin through
+-fplugin-arg-libgcc_feature_extract-<arg_name>
+
+Many arguments are optional, but some are required:
+
+Required arguments:
+@itemize
+@item
+database - This is the MAGEEC database which the extracted
+features will be added to
+
+@item
+out - This is the output file which will store a mapping
+from each program unit to the identifier of the features
+for that program unit in the database. New entries are
+appended to the end of this file.
+@end itemize
+
+Optional arguments:
+@itemize
+@item
+plugin-info - Print information about the plugin.
+
+@item
+version - Print the version of the plugin.
+
+@item
+framework-version - Print the version of MAGEEC which this
+plugin was built against.
+
+@item
+database-version - Print the version of the database
+provided.
+
+@item
+debug - Enable debug output
+
+@item
+sql-trace - Enable a trace of all SQL queries executed
+@end itemize
+
+For build systems like autoconf and CMake it is necessary
+to inject these flags into the build. This can often
+be achieved by setting the CFLAGS and CXXFLAGS environment
+variables or through the -DCMAKE_C_FLAGS and -DCMAKE_CXX_FLAGS
+arguments during the configure stage.
+
+@node Usage notes
+@subsection Usage notes
+
+Note that when performing the feature extraction, it is
+not safe to do a build in parallel if all of the compilation
+processes have the same file to store output features.
+When this happens, all of the process may try to write
+to the output file at the same time, corrupting the
+entries.
+
+@node Example usage
+@subsection Example usage
+
+gcc -fplugin=/path/to/libgcc_feature_extract.so
+    -fplugin-arg-libgcc_feature_extract-database=my_database.db
+    -fplugin-arg-out=features.csv
+    foo.c bar.c -o a.out
+
+cmake -DCMAKE_C_FLAGS="-fplugin=/path/to/libgcc_feature_extract.so
+      -fplugin-arg-libgcc_feature_extract-database=my_database.db
+      -fplugin-arg-out=features.csv"
 
 @node GNU Free Documentation License
 @chapter GNU Free Documentation License
