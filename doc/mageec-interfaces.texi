@@ -1,0 +1,151 @@
+\input texinfo
+@setfilename mageec-design.info
+@afourpaper
+@settitle MAGEEC Design
+@paragraphindent 0
+
+@copying
+This design document is for MAGEEC.
+This manual is for MAGEEC.
+
+Copyright @copyright{} 2015 Embecosm Limited.
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts. A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+@end quotation
+@end copying
+
+@titlepage
+@title MAGEEC Library
+@subtitle MAchine Guided Energy Efficient Compilation
+@author Edward Jones
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@node Top
+@top Scope of this Document
+This document describes the MAGEEC library interface.
+
+@menu
+* Overview::
+@end menu
+
+@node Overview
+@section Overview
+
+MAGEEC is based around a core library which has a number of
+interfaces. These interfaces are used by other MAGEEC
+components in order to perform various functions and access
+the MAGEEC file format.
+
+A developer can use the MAGEEC interface to implement a
+new feature extractor, integrate MAGEEC decision making
+into a new compiler, or implement a new machine learner
+plugin.
+
+The feature extractor uses this interface to record
+features in the database file. The compiler uses the
+interface in order to record compilations of program unit,
+and to interface with the machine learners to request them
+to make decisions about parameters used in the compilation.
+The standalone MAGEEC tool uses this interface to
+create a new database, add results to the database,
+merge databases, and run various other utility queries. The
+machine learners used by MAGEEC implement a machine
+learning interface specified by MAGEEC, which allows them
+to be used by other tools.
+
+The library is called libmageec, and is installed as part
+of the normal build. The headers are also installed, and
+can be used to interface with the library.
+
+The interface is annotated with doxygen documentation, which
+can be generated when building MAGEEC. The doxygen
+documentation provides a more precise definition of the
+interface to MAGEEC.
+
+@node Design
+@section Design
+
+ML.h - Describes the training and decision making interface.
+A plugin implementing a new machine learner implements this
+interface, and this interface is implemented by the C5.0 and
+1NN machine learners.
+
+TrainedML.h - Holds a ML interface as well as training data
+retrieved from the Database. When a compiler wishes to use
+MAGEEC to make decisions about parameters, it retrieves
+instances of TrainedML from the database and then queries
+them with decisions.
+
+Attribute.h - An Attribute is the base class for Features and
+Parameters. It has a unique identifier (which is opaque to MAGEEC),
+a type (one of a subset of MAGEEC types) and a value. For
+features, the identifier is defined by the feature extractor,
+and for parameters, the identifier is defined by the compiler.
+
+Attributes can have one of several types. Unlike the
+identifiers, these types are defined in MAGEEC, as they must
+be understandable to both the feature extract and machine
+learners, and MAGEEC must be able to serialize and deserialize
+them for storage in the database.
+
+AttributeSet.h - This defines a class for a set of
+Features or Parameters.
+
+Database.h - This provides the interface to most of the
+functionality which involves interaction with the MAGEEC
+database. This functionality includes:
+
+@itemize
+@item
+Creating and loading databases (Database::loadDatabase,
+Database::createDatabase, Database::getDatabase)
+@item
+Appending one database to another (Database::appendDatabase)
+@item
+Retrieving trained machine learners
+(Database::getTrainedMachineLearners)
+@item
+Garbage collecting (Database::garbageCollect)
+@item
+Creating and retrieving set of features from the database
+(Database::newFeatureSet, Database::getFeatureSetFeatures)
+@item
+Creating and retrieving sets of parameters from the database
+(Database::newParameterSet, Database::getParameters)
+@item
+Recording new compilations (Database::newCompilation)
+@item
+Adding results to the database (Database::addResults)
+@item
+Training machine learners (Database::trainMachineLearner)
+@end itemize
+
+It also defines the interface for accessing results using
+an iterator interface.
+
+Framework.h - This is the top level interface. It provides the
+ability to load, register and retrieve machine learner interfaces,
+as well as load or create a database.
+
+Result.h - This defines the format of a result as seen by
+the machine learner during training. A result is comprised
+of the set of parameters which make up a compilation, a
+set of features which define the program unit which was
+compile, and a floating point value which defines the
+'quality' of the result.
+
+@node GNU Free Documentation License
+@chapter GNU Free Documentation License
+@include fdl-1.3.texi
+
+@bye
