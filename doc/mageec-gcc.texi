@@ -1,7 +1,7 @@
 \input texinfo
-@setfilename mageec-design.info
+@setfilename mageec-gcc-wrapper.info
 @afourpaper
-@settitle MAGEEC Design
+@settitle MAGEEC GCC Wrapper
 @paragraphindent 0
 
 @copying
@@ -35,11 +35,13 @@ Texts. A copy of the license is included in the section entitled
 This document describes the MAGEEC GCC wrapper
 
 @menu
-* Overview::
+* MAGEEC GCC Wrapper::
 * GNU Free Documentation License::
 @end menu
 
-@node Overview
+@node MAGEEC GCC Wrapper
+@chapter MAGEEC GCC Wrapper
+
 @section Overview
 
 The MAGEEC GCC wrapper aims to wrap around the gcc, gfortran
@@ -59,7 +61,6 @@ into the database, recording the features associated with
 the program unit as well as the parameters used to
 compile it.
 
-@node Design
 @section Design
 
 The design of the wrapper is pretty straightforward. It
@@ -107,7 +108,6 @@ is where compilations of each program unit are stored.
 @c @image Diagram of operation of the gcc wrapper during gather and optimize
 @c @image Diagram of the output format
 
-@node Usage
 @section Usage
 
 There are two modes which the gcc wrapper can operate in; gather mode, and

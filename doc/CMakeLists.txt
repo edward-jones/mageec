@@ -29,47 +29,91 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pdf)
 
 if (MAKEINFO_EXECUTABLE)
-  if (MAGEEC_WITH_USER_DOCS)
-    add_custom_target (user-guide-info
-      COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec.texi
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/info
-      COMMENT "Generating MAGEEC user guide manual." VERBATIM)
+  # Building MAGEEC guide
+  add_custom_target (building-mageec-info
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/building-mageec.texi
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/info
+    COMMENT "Generating Building MAGEEC guide info." VERBATIM)
+  add_custom_target (building-mageec-html
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/building-mageec.texi "--html"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
+    COMMENT "Generating Building MAGEEC guide html." VERBATIM)
+  add_custom_target (building-mageec-pdf
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/building-mageec.texi "--pdf"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pdf
+    COMMENT "Generating Building MAGEEC guide pdf." VERBATIM)
+  add_dependencies (info building-mageec-info)
+  add_dependencies (html building-mageec-html)
+  add_dependencies (pdf  building-mageec-pdf)
 
-    add_custom_target (user-guide-html
-      COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec.texi "--html"
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
-      COMMENT "Generating MAGEEC user guide html." VERBATIM)
+  # MAGEEC design
+  add_custom_target (mageec-design-info
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-design.texi
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/info
+    COMMENT "Generating MAGEEC design manual info." VERBATIM)
+  add_custom_target (mageec-design-html
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-design.texi "--html"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
+    COMMENT "Generating MAGEEC design manual html." VERBATIM)
+  add_custom_target (mageec-design-pdf
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-design.texi "--pdf"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pdf
+    COMMENT "Generating MAGEEC design manual pdf." VERBATIM)
+  add_dependencies (info mageec-design-info)
+  add_dependencies (html mageec-design-html)
+  add_dependencies (pdf  mageec-design-pdf)
 
-    add_custom_target (user-guide-pdf
-      COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec.texi "--pdf"
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pdf
-      COMMENT "Generating MAGEEC user guide pdf." VERBATIM)
+  # MAGEEC feature extractor
+  add_custom_target (mageec-feature-extractor-info
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-feature-extract.texi
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/info
+    COMMENT "Generating MAGEEC feature extractor manual info." VERBATIM)
+  add_custom_target (mageec-feature-extractor-html
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-feature-extract.texi "--html"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
+    COMMENT "Generating MAGEEC feature extractor manual html." VERBATIM)
+  add_custom_target (mageec-feature-extractor-pdf
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-feature-extract.texi "--pdf"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pdf
+    COMMENT "Generating MAGEEC feature extractor manual pdf." VERBATIM)
+  add_dependencies (info mageec-feature-extractor-info)
+  add_dependencies (html mageec-feature-extractor-html)
+  add_dependencies (pdf  mageec-feature-extractor-pdf)
 
-    add_dependencies (info user-guide-info)
-    add_dependencies (html user-guide-html)
-    add_dependencies (pdf  user-guide-pdf)
-  endif ()
+  # MAGEEC GCC wrapper
+  add_custom_target (mageec-gcc-wrapper-info
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-gcc.texi
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/info
+    COMMENT "Generating MAGEEC GCC wrapper manual info." VERBATIM)
+  add_custom_target (mageec-gcc-wrapper-html
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-gcc.texi "--html"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
+    COMMENT "Generating MAGEEC GCC wrapper manual html." VERBATIM)
+  add_custom_target (mageec-gcc-wrapper-pdf
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-gcc.texi "--pdf"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pdf
+    COMMENT "Generating MAGEEC GCC wrapper manual pdf." VERBATIM)
+  add_dependencies (info mageec-gcc-wrapper-info)
+  add_dependencies (html mageec-gcc-wrapper-html)
+  add_dependencies (pdf  mageec-gcc-wrapper-pdf)
 
-  if (MAGEEC_WITH_DESIGN_DOCS)
-    add_custom_target (design-info
-      COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-design.texi
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/info
-      COMMENT "Generated MAGEEC design document manual." VERBATIM)
+  # MAGEEC Interfaces
+  add_custom_target (mageec-interfaces-info
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-interfaces.texi
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/info
+    COMMENT "Generating MAGEEC interfaces info." VERBATIM)
+  add_custom_target (mageec-interfaces-html
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-interfaces.texi "--html"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
+    COMMENT "Generating MAGEEC interfaces html." VERBATIM)
+  add_custom_target (mageec-interfaces-pdf
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-interfaces.texi "--pdf"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pdf
+    COMMENT "Generating MAGEEC interfaces pdf." VERBATIM)
+  add_dependencies (info mageec-interfaces-info)
+  add_dependencies (html mageec-interfaces-html)
+  add_dependencies (pdf  mageec-interfaces-pdf)
 
-    add_custom_target (design-html
-      COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-design.texi "--html"
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
-      COMMENT "Generated MAGEEC design document html." VERBATIM)
-
-    add_custom_target (design-pdf
-      COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec-design.texi "--pdf"
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pdf
-      COMMENT "Generating MAGEEC design document pdf." VERBATIM)
-
-    add_dependencies (info design-info)
-    add_dependencies (html design-html)
-    add_dependencies (pdf  design-pdf)
-  endif()
 endif()
 
 if (DOXYGEN_FOUND AND MAGEEC_WITH_DOXYGEN)

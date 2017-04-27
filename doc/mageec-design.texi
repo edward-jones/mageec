@@ -36,37 +36,13 @@ The document outlines the design of MAGEEC @emph{MAchine Guided Energy
 Efficient Compilation}.
 
 @menu
-* Overview::
-* Current optimization approaches::
-* Terminology::
-* Theory for how MAGEEC works::
-* High level features of MAGEEC::
-* Comparison with MAGEEC::
-* MAGEEC components::
-* Feature extraction::
-* Interface::
-* GCC plugin::
-* Compiler driver::
-* Driver interface::
-* GCC wrapper driver::
-* MAGEEC file format::
-* Database structure::
-* Machine learner interface::
-* C5.0 Machine learner::
-* 1-NN Machine learner::
-* Tooling::
-* Standalone MAGEEC tool::
-* Feature extraction script::
-* Combined elimination script::
-* MAGEEC library::
-* Workflow::
-* Gathering and training::
-* Optimizing::
-* Experimentation::
+* MAGEEC Design::
 * GNU Free Documentation License::
 @end menu
 
-@node Overview
+@node MAGEEC Design
+@chapter MAGEEC Design
+
 @section Overview
 
 MAGEEC is a set of components to augment a compiler with the ability
@@ -140,8 +116,7 @@ between different metrics, such as balancing energy and size.
 
 @c @image DIAGRAM OF MORE IDEAL OPTIMIZATION APPROACHES (module + function level)
 
-@node Current optimization approaches
-@subsection Current optimization approaches
+@section Current optimization approaches
 
 As it stands, most compilers appear to use a fixed pipeline of
 passes when optimizing. However there has been other work to make
@@ -167,7 +142,6 @@ blocks and the ferocity of inlining.
 @c Citations for other authors' work
 @end itemize
 
-@node Terminology
 @section Terminology
 
 @itemize
@@ -194,7 +168,6 @@ individual program unit. Multiple units of the same program may
 use the same configuration of the compiler.
 @end itemize
 
-@node Theory for how MAGEEC works
 @section Theory for how MAGEEC works
 
 MAGEEC automates the selection of optimizations by using a
@@ -212,7 +185,6 @@ which are likely to produce a good quality output executable.
 
 @c @image High level diagram of the process (with MAGEEC-instrumented compiler)
 
-@node High level features of MAGEEC
 @section High level features of MAGEEC
 
 MAGEEC using static features, which are derived ahead of time from the
@@ -285,7 +257,6 @@ integration beneficial as it may allow compilation controlling
 decision to be made at a finer granularity than program or module
 level.
 
-@node Comparison with MAGEEC
 @section Comparison with MAGEEC
 
 The original MAGEEC was aimed at optimizing for energy on embedded
@@ -293,7 +264,6 @@ systems. The aim of this updated version was to also target high
 performance application and also to improve the workflow to make
 the optimization process more robust.
 
-@node MAGEEC components
 @section MAGEEC components
 
 @c @image High level diagram of gather+train with compiler, possibly later? (workflow?)
@@ -331,9 +301,8 @@ and optimization process.
 We now describe each of these components in more detail, and
 their current implementations.
 
-@node Feature extraction
 @subsection Feature extraction
-@node Interface
+
 @subsubsection Interface
 
 Feature extraction involves taking an input source program, and
@@ -357,7 +326,6 @@ The interface to MAGEEC allows a feature extractor to insert a
 new set of features into the file for a program unit, and
 receive a unique identifier for those features back.
 
-@node GCC plugin
 @subsubsection GCC plugin
 
 As well as the interface to the feature extractor, a feature
@@ -384,7 +352,6 @@ The features extracted by the GCC feature extractor are as follows:
 @c @image High level diagram of feature extraction process
 @c @image Diagram of feature extractor plugin process
 
-@node Compiler driver
 @subsection Compiler driver
 
 In order to drive the training and optimization process, there needs
@@ -396,7 +363,6 @@ it needs to be possible to call out to MAGEEC to make decisions using
 a trained machine learner and then use these decisions to control
 compilation parameters.
 
-@node Driver interface
 @subsubsection Driver interface
 
 MAGEEC offers an interface, which allows the compiler, or a wrapper
@@ -416,7 +382,6 @@ parameters. The driver can query a machine learner with a set of
 feature, and receive a decision. It can then use this decision to control
 the compilation of a program unit.
 
-@node GCC wrapper driver
 @subsection GCC wrapper driver
 
 MAGEEC offers one concrete interface to drive GCC for training and
@@ -449,7 +414,6 @@ severely limits the optimization potential.
 @c High level diagram of compilation process for gather+optimize
 @c @image Diagram of GCC wrapper driver process
 
-@node MAGEEC file format
 @subsection MAGEEC file format
 
 Internally MAGEEC uses an SQLite database as an intermediate format.
@@ -498,7 +462,6 @@ The main disadvantage to using SQLite is that it adds some
 complexity to the interfaces, and requires more boilerplate code
 to interface than a simpler flat file solution would.
 
-@node Database structure
 @subsubsection Database structure
 
 Below is a description of the file format structure and the
@@ -506,7 +469,6 @@ associated relations.
 
 @c @image Database structure diagram
 
-@node Machine learner interface
 @subsection Machine learner interface
 
 The machine learner interface provides the capability to train
@@ -574,7 +536,6 @@ learner as a plugin to the standalone tool and GCC wrapper, by
 building the machine learner as a dynamic library which the
 tools can link against.
 
-@node C5.0 Machine learner
 @subsubsection C5.0 Machine learner
 
 C5.0 is a machine learning which creates a classifier tree based on
@@ -598,7 +559,6 @@ machine learner is not able to make a decision.
 Advantages of C5.0 are that the interface is straightforward
 and the decision trees are human readable.
 
-@node 1-NN Machine learner
 @subsubsection 1-NN Machine learner
 
 One nearest neighbor is a conceptually very simple classification
@@ -615,13 +575,11 @@ to understand.
 
 @c @image Diagram of 1NN classification for MAGEEC
 
-@node Tooling
 @subsection Tooling
 
 As well as the key MAGEEC interfaces and components, there are also
 a few tasks which are achieved through tooling and python scripts.
 
-@node Standalone MAGEEC tool
 @subsubsection Standalone MAGEEC tool
 
 This tool exists to do a few tasks which can't be done by either
@@ -630,14 +588,12 @@ results into the database, training a database using a machine
 learner; and creating and merging databases files. It is a simple
 command line tool.
 
-@node Feature extraction script
 @subsubsection Feature extraction script
 
 This script exists to build and feature extract a program using the
 GCC feature extractor plugin. It simplifies the interface to the
 plugin, and automatically handles autoconf and CMake build systems.
 
-@node Combined elimination script
 @subsubsection Combined elimination script
 
 This script performs the combined elimination process as described in @c citation.
@@ -659,7 +615,6 @@ to be more effective than other iteractive compilation techniques.
 Combined elimination is used by MAGEEC primarily for finding good
 data points for the training process.
 
-@node MAGEEC library
 @subsection MAGEEC library
 
 The various interfaces exposed by MAGEEC, and used by the GCC
@@ -672,14 +627,12 @@ be used to perform feature extraction from within another
 compiler, or to allow MAGEEC to alter the internal pass
 sequences in a compiler.
 
-@node Workflow
 @section Workflow
 
 There are two phases to using MAGEEC. Gathering and training a
 machine learner, and optimizing a program based on a trained
 machine learner.
 
-@node Gathering and training
 @subsection Gathering and training
 
 The gathering process involves repeatedly building a number of
@@ -759,7 +712,6 @@ gathered into MAGEEC, they can be trained. Training involves
 invoking the machine learner to produce a training blob
 which is stored and used at a later point.
 
-@node Optimizing
 @subsection Optimizing
 
 In comparison to gathering and training, the optimizing phase is
@@ -771,7 +723,6 @@ and this is used to inform the compilation of the program.
 The result should be a binary which is more optimal than would
 be produced by the default compiler.
 
-@node Experimentation
 @section Experimentation
 
 @c Features

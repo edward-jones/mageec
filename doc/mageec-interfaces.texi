@@ -1,7 +1,7 @@
 \input texinfo
-@setfilename mageec-design.info
+@setfilename mageec-interfaces.info
 @afourpaper
-@settitle MAGEEC Design
+@settitle MAGEEC Interfaces
 @paragraphindent 0
 
 @copying
@@ -20,7 +20,7 @@ Texts. A copy of the license is included in the section entitled
 @end copying
 
 @titlepage
-@title MAGEEC Library
+@title MAGEEC Interfaces
 @subtitle MAchine Guided Energy Efficient Compilation
 @author Edward Jones
 @page
@@ -35,10 +35,13 @@ Texts. A copy of the license is included in the section entitled
 This document describes the MAGEEC library interface.
 
 @menu
-* Overview::
+* MAGEEC Interfaces::
+* GNU Free Documentation License::
 @end menu
 
-@node Overview
+@node MAGEEC Interfaces
+@chapter MAGEEC Interfaces
+
 @section Overview
 
 MAGEEC is based around a core library which has a number of
@@ -72,7 +75,6 @@ can be generated when building MAGEEC. The doxygen
 documentation provides a more precise definition of the
 interface to MAGEEC.
 
-@node Design
 @section Design
 
 ML.h - Describes the training and decision making interface.

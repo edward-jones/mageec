@@ -1,7 +1,7 @@
 \input texinfo
-@setfilename mageec.info
+@setfilename building-mageec.info
 @afourpaper
-@settitle MAGEEC
+@settitle Building MAGEEC
 @paragraphindent 0
 
 @copying
@@ -19,7 +19,7 @@ Texts. A copy of the license is included in the section entitled
 @end copying
 
 @titlepage
-@title MAGEEC
+@title Building MAGEEC
 @subtitle MAchine Guided Energy Efficient Compilation
 @author Simon Cook
 @author Edward Jones
@@ -36,17 +36,13 @@ This document describes how to build MAGEEC @emph{MAchine Guided Energy
 Efficient Compilation}.
 
 @menu
-* Prerequesites::
-* MAGEEC gcc plugin dependencies::
-* MAGEEC doxygen dependencies::
-* MAGEEC user documentation dependencies::
 * Building MAGEEC::
-* Build options::
-* Build targets::
 * GNU Free Documentation License::
 @end menu
 
-@node Prerequesites
+@node Building MAGEEC
+@chapter Building MAGEEC
+
 @section Prerequesites
 
 There are a number of prerequesites that are needed to build all
@@ -72,7 +68,6 @@ required, along with the development headers.
 
 A couple of the components have additional dependencies:
 
-@node MAGEEC gcc plugin dependencies
 @subsection MAGEEC gcc plugin dependencies
 
 @itemize
@@ -83,7 +78,6 @@ to GCC. Any version of 4.5.0 includes the plugin headers.
 @end itemize
 
 
-@node MAGEEC doxygen dependencies
 @subsection MAGEEC doxygen dependencies
 
 @itemize
@@ -92,7 +86,6 @@ Doxygen - The MAGEEC C++ source code is annotated with Doxygen
 comments. Doxygen is required to build API documentation.
 @end itemize
 
-@node MAGEEC user documentation dependencies
 @subsection MAGEEC user documentation dependencies
 
 @itemize
@@ -103,7 +96,6 @@ documentation
 @c other packages for pdf/html documentation?
 @end itemize
 
-@node Building MAGEEC
 @section Building MAGEEC
 
 At the most basic level, one can build MAGEEC with the following commands
@@ -120,7 +112,6 @@ make
 make install
 @end example
 
-@node Build options
 @subsection Build options
 
 There are some options that can be provided to CMake to configure
@@ -153,7 +144,6 @@ the GCC feature extractor as part of the default build target.
 wrapper driver as part of the default build target.
 @end itemize
 
-@node Build targets
 @subsection Build targets
 
 As well as various build options, there are also some custom

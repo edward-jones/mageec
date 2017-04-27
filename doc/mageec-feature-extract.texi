@@ -1,7 +1,7 @@
 \input texinfo
-@setfilename mageec-design.info
+@setfilename mageec-feature-extractor.info
 @afourpaper
-@settitle MAGEEC Design
+@settitle MAGEEC GCC Feature Extractor
 @paragraphindent 0
 
 @copying
@@ -20,7 +20,7 @@ Texts. A copy of the license is included in the section entitled
 @end copying
 
 @titlepage
-@title MAGEEC GCC Feature Extraction Plugin
+@title MAGEEC GCC Feature Extractor
 @subtitle MAchine Guided Energy Efficient Compilation
 @author Edward Jones
 @page
@@ -35,16 +35,13 @@ Texts. A copy of the license is included in the section entitled
 This document describes the MAGEEC Feature Extraction plugin.
 
 @menu
-* Overview::
-* Design::
-* Features::
-* Usage::
-* Usage notes::
-* Example usage::
+* MAGEEC GCC Feature Extractor::
 * GNU Free Documentation License::
 @end menu
 
-@node Overview
+@node MAGEEC GCC Feature Extractor
+@chapter MAGEEC GCC Feature Extractor
+
 @section Overview
 
 The MAGEEC feature extractor plugin is a plugin to perform
@@ -52,7 +49,6 @@ extraction of static features from C, C++ and Fortran source code
 by using GCC. It is an open source plugin which extracts the
 features from the GCC internal gimple representation.
 
-@node Design
 @section Design
 
 The feature extractor is a pass which is injected into the
@@ -84,7 +80,6 @@ cannot understand.
 @c @image Picture of the integration with MAGEEC
 @c @image Picture of the output file format
 
-@node Features
 @section Features
 
 Below is a list of the function features and module
@@ -96,7 +91,6 @@ including max/min/mean/range.
 
 @c List of all of the features
 
-@node Usage
 @section Usage
 
 The plugin is found in the library directory of the
@@ -153,7 +147,6 @@ be achieved by setting the CFLAGS and CXXFLAGS environment
 variables or through the -DCMAKE_C_FLAGS and -DCMAKE_CXX_FLAGS
 arguments during the configure stage.
 
-@node Usage notes
 @subsection Usage notes
 
 Note that when performing the feature extraction, it is
@@ -163,7 +156,6 @@ When this happens, all of the process may try to write
 to the output file at the same time, corrupting the
 entries.
 
-@node Example usage
 @subsection Example usage
 
 gcc -fplugin=/path/to/libgcc_feature_extract.so
