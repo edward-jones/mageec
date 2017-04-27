@@ -1,13 +1,14 @@
 \input texinfo
-@setfilename mageec.info
+@setfilename mageec-design.info
 @afourpaper
-@settitle MAGEEC
+@settitle MAGEEC Design
 @paragraphindent 0
 
 @copying
+This design document is for MAGEEC.
 This manual is for MAGEEC.
 
-Copyright @copyright{} 2013-2015 Embecosm Limited and University of Bristol.
+Copyright @copyright{} 2015 Embecosm Limited.
 @quotation
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -19,9 +20,8 @@ Texts. A copy of the license is included in the section entitled
 @end copying
 
 @titlepage
-@title MAGEEC
+@title MAGEEC GCC Feature Extraction Plugin
 @subtitle MAchine Guided Energy Efficient Compilation
-@author Simon Cook
 @author Edward Jones
 @page
 @vskip 0pt plus 1filll
@@ -32,47 +32,183 @@ Texts. A copy of the license is included in the section entitled
 
 @node Top
 @top Scope of this Document
-This document is the user guide for the MAGEEC @emph{MAchine Guided Energy
-Efficient Compilation} project.
+This document describes the MAGEEC standalone command.
 
 @menu
-* Building MAGEEC::
+* Overview::
+* Design::
+* Features::
+* Usage::
+* Usage notes::
+* Example usage::
 * GNU Free Documentation License::
 @end menu
 
-@node Building MAGEEC
-@chapter Building MAGEEC
-MAGEEC uses the CMake build system.
+@node Overview
+@section Overview
 
-The build and installation can be configured using @command{cmake} provided
-with the path of the main source directory. The build should take place in a
-directory separate to the source.
+The MAGEEC command line utility is a standalone command used
+to perform some important tasks, as well as some maintainance
+procedures.
 
-@example
-cd path/to/mageec
-cd ../
-mkdir build
-cd build
-cmake ../mageec ...
-@end example
+@node Design
+@section Design
 
-Available configuration options can be discovered by provided @code{--help} to
-@command{cmake}. The most useful of these is the
-@code{-DCMAKE_INSTALL_PREFIX=PREFIX} options which is used to set the
-installation location; tools will be installed into @code{PREFIX/bin},
-libraries into @code{PREFIX/lib} and headers into @code{PREFIX/include}.
+The command line utility is used to perform the important
+task of creating a new database file, adding results to
+an existing database and training machine learners. It is
+also used to perform some maintenance tasks including
+appending one database to another database, and garbage
+collecting stale entries from a database file.
 
-Once configured, MAGEEC can be build using:
+The utility is linked against the MAGEEC core library
+which gives it access to the the machine learners and the
+MAGEEC database file.
 
-@example
-make all
-@end example
+@node Usage
+@section Usage
 
-It can then be installed using:
+The tool can be run in various modes, all of which require a
+database as the first argument and the mode as the second
+argument. It can also be run standalone, to access some
+utility methods.
 
-@example
-make install
-@end example
+If a 'mode' argument is specified, then it is always the
+second argument, immediately following the argument for
+the database which is being operated on. The mode arguments
+are as follows:
+
+@itemize
+@item
+--create - Create a new empty database.
+
+@item
+--append <database> - Append another database to the current
+database. The following argument is the database to be appended
+
+@item
+--train - Train the database using the stored training data,
+using one or more machine learners and targetting one or
+more metrics.
+
+@item 
+--garbage-collect - Remove any entries in the database which
+are not referenced by any result.
+
+@item
+--add-results <results>.csv - Add results to the database
+from a results csv file provided in the following argument.
+@end itemize
+
+There are some arguments which are required when using the
+--train mode:
+
+@itemize
+@item
+--metric <value> - Required in --train mode. Specifies
+which metrics the database should be trained for. The
+value provided in the following argument corresponds to
+the 'metric' field of the results which were added to the
+database, and is an arbitrary string identifier. Multiple
+--metric arguments may be provided.
+
+@item
+--ml <value> - Required in --train mode. Specifies which
+machine learner interfaces should be trained. This argument
+may be a string identifier of a builtin machine learner, or
+it may be a shared object for a machine learner plugin
+implementing the machine learner interface. Multiple --ml
+arguments may be provided.
+@end itemize
+
+There are also some optional arguments which can be
+provided in any mode:
+
+@itemize
+@item
+--help - Print out help for the tool.
+
+@item
+--version - Print the version of MAGEEC.
+
+@item
+--debug - Enable debug output from the tool.
+
+@item
+--database-version - Print the version of the database
+being used. Ignore if no database is provided.
+
+@item
+--sql-trace - Print a trace of all SQL queries executed by
+the tool.
+
+@item
+--print-ml-interfaces - Print all of the interfaces available
+to the framework.
+
+@item
+--print-mls - Print all of the machine learners in the
+database.
+@end itemize
+
+@node Training
+@subsection Training
+
+When training, a database is specified, along with the machine
+learners and metrics to train for. There are two machine learners
+built into MAGEEC, C5.0 and 1-NN which are identified to the
+tool as 'c50' and '1nn' respectively. In addition to these
+machine learners, a user can provide a shared library which
+implements the machine learner interface as a plugin instead
+of a string identifier.
+
+The training process trains for all combinations of machine
+learns and metrics. So if you provided both 'c50' and '1nn'
+as machine learners, and specified that you wanted to train
+for 'energy' and 'size', then the following machine learners
+would be trained.
+
+@itemize
+@item
+C5.0 for energy
+@item
+C5.0 for size
+@item
+1NN for energy
+@item
+1NN for size
+@end itemize
+
+The 'metric' arguments describe the metric that is being
+trained for. When results are added to the database, each
+result has an associated string identifier which describes
+what quality of the program the result is measuring.
+
+@node Adding results
+@subsection Adding results
+
+Results are added to the database through the '--add-results'
+argument. This argument takes a path to a file of the following
+format:
+
+@c results file format
+
+@node Example usage
+@section Example usage
+
+mageec --help
+
+mageec --version
+
+mageec --print-ml-interfaces --ml my-ml-plugin.so
+
+mageec database.db --create
+
+mageec database.db --garbage-collect
+
+mageec database.db --append other-database.db --debug
+
+mageec database.db --train --ml c50 --ml 1nn --metric energy --debug
 
 @node GNU Free Documentation License
 @chapter GNU Free Documentation License
