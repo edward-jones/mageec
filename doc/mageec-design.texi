@@ -63,29 +63,33 @@ given program or source file, however this is a non-trivial manual
 task which requires a lot of trial and error, and a lot of
 iterations of compilation.
 
-@c @image PICTURE OF TYPICAL APPROACH TAKEN WHEN COMPILING
+@c image of typical compile approach
+@image{"current-pass-pipelines"} @c filename[, width[, height[, alttext[, extension]]]]}
 
 From the perspective of the user, it would be reassuring to know
 that the compiler is not missing optimization opportunities. If the
-compiler could be relied on to make more precise optimization decisions
-it could also be possible to simplify the user experience by
+compiler could be relied on to make more accurate optimization decisions
+it could also be feasible to simplify the user experience by
 not requiring them to manually disable and enable flags to
 squeeze maximum performance from their code.
 
-From the perspective of the compiler writer, it would be nice to
-avoid having to manually tune the pass pipeline for each new
+From the perspective of the compiler writer, it would be beneificial
+to avoid the laborious task of tuning the pass pipeline for each new
 processor and CPU. For a given architecture, there can exist a vast
 array of CPUs which vary in the hardware features supported and
-the intricacies of their microarchitecture. (Example of ARM?)
-Tuning the compiler for each of these variants is laborious. 
+the intricacies of their microarchitecture. @c ARM example?
+For each microarchitecture it is necessary to optimize the
+compiler to target it, and automatically optimizing the pass
+pipeline is a way in which performance can be specialized for a
+given core requiring minimal input from the compiler writer.
 
 A further point of interest is that most compilers currently
 optimize for speed, and give less attention to code size, energy,
 or any other interesting metrics. In general optimization can only
-be done with one goal (speed/code size) and it is not possible to
-express more complex optimizations goals such as optimizing for
-energy and code size at the same time, or optimizing for energy
-after a code size target is achieved.
+be done with one goal (typically speed or code size) and it is not
+possible to express more complex optimizations goals such as
+optimizing for energy and code size at the same time, or
+optimizing for speed whilst keeping compile time to a minimum.
 
 If selecting the best compiler configuration can be automated,
 then there are several potential benefits which can be realized.
@@ -98,7 +102,7 @@ sets, and metrics.
 
 @item
 Provide the user a more straightforward interface, as well
-as better performance of resultant programs.
+as better performing programs.
 
 @item
 Control optimizations at a finer granularity (file, module) to
@@ -114,9 +118,10 @@ Provide a more powerful interface to control tradeoffs
 between different metrics, such as balancing energy and size.
 @end itemize
 
-@c @image DIAGRAM OF MORE IDEAL OPTIMIZATION APPROACHES (module + function level)
+@c Diagram of more ideal optimization approach
+@image{"better-pass-pipelines"} @c filename[, width[, height[, alttext[, extension]]]]}
 
-@section Current optimization approaches
+@section Other optimization approaches
 
 As it stands, most compilers appear to use a fixed pipeline of
 passes when optimizing. However there has been other work to make
@@ -132,14 +137,30 @@ data. The profile provides information about the hot-spots in
 the code, which can be used to inform the ordering of basic
 blocks and the ferocity of inlining.
 
-@c @item
-@c MILEPOST
+Profile guided optimization can produce considerable
+performance improvements (around 15%). However there are a
+couple of drawbacks. First, it requires a project to be
+built twice which can be cumbersome for larger software
+projects. Second, it requires a long run of the profiled
+program with representative data to produce an accurate
+profile. Finally, current PGO implementations only provide a
+limited amount of information about the program; namely the
+frequently of usage of functions and basic blocks. Nevertheless
+it is a very valueable technique.
 
-@c @item
+@item
+MILEPOST: Much like the aim of MAGEEC, MILEPOST augmented
+a compiler with the ability to make optimization decisions
+based on statically derived features of an input program.
+
+@c TODO Fill in more info here
+
+@item
+The MAGEEC project
+
 @c MAGEEC project
+@c citations for other authors work
 
-@c @item
-@c Citations for other authors' work
 @end itemize
 
 @section Terminology
@@ -185,37 +206,45 @@ which are likely to produce a good quality output executable.
 
 @c @image High level diagram of the process (with MAGEEC-instrumented compiler)
 
-@section High level features of MAGEEC
+@section Comparison with other compiler tuning approaches
 
-MAGEEC using static features, which are derived ahead of time from the
-input program. This has some advantages and disadvantages compared to
-other approaches.
+MAGEEC uses static features derived ahead of time from the input
+program in order to predict parameters which should be used
+for a given compilation. However there are a couple of other
+approaches which can be used for compiler tuning. One approach
+is to predict compiler parameters based on dynamic features
+instead of static features, and the other approach is to
+iteratively compile a program refining the set of compilation
+parameters after each build. Compared to our approaches,
+our approach has some advantages and disadvantages:
 
 Advantages:
 @itemize
 @item
-Test programs do not have to be recompiled to receive a benefit. Interactive
-compilation techniques such as combined elimination require a large number
-of recompilation runs, and even just doing a single profiled run to
-derived dynamic features can be prohibitively difficult if the program is
-large or cannot easily be instrumented.
+To derive static features, test programs do not have to be recompiled to
+receive a benefit. Interactive compilation techniques such as combined
+elimination require a large number of recompilation runs, and even just
+doing a single profiled run to derived dynamic features can be
+prohibitively difficult if the program is large or cannot easily be
+instrumented.
 
 @item
-Measure static features is simpler than measuring dynamic features. Dynamic
-features may not be precisely measureable, may depend on the environment,
-and require a more complex build stage.
+Compared to using dynamic features, measuring static features is simpler.
+Dynamic features may not be precisely measureable, may depend on the
+environment, or require a more complex build stage.
 
 @item
-Measuring static features is quicker. The effect on compilation time can
-be minimized with static features, as they can be very easily derived from
-the source code or intermediate representation. This makes deployment
+Measuring static features is fast. The effect on compilation time can
+be minimized as static features can be very easily derived from the
+source code or intermediate representation. This makes deployment
 far easier.
 
 @item
-In some cases it may not be possible to instrument and measure dynamic
+In some cases it may not be able to instrument and measure dynamic
 features. For example, an embedded system may not have enough memory
 for the overhead of instrumentation, or it may not be possible to
 measure some features on an embedded systems
+
 @c Example (limitations in debug interface)
 @end itemize
 
@@ -225,10 +254,10 @@ Disadvantages:
 Static features cannot express the effects of the input data on the
 program. Two program could have identical features, but exhibit very
 different performance characteristics depending on the data provided
-to it. Indeed, one program can also exhibit very different performance
-depending on the data provided to it. This can be mitigated, as the
-features of the program will often hint at the type of data used with
-it, however the problem cannot be mitigated.
+to it. Indeed, one program on its own can also exhibit very different
+performance depending on the data provided to it. This can be mitigated,
+as the features of the program will often hint at the type and patterns
+of data usage, however the problem cannot be fully mitigated.
 
 @item
 Static features are less representative of the input program. This
@@ -237,15 +266,9 @@ more representative of the input program than static features. This
 means that static features are likely to be far less effective than
 using dynamic features. It also means more training data is likely
 to be needed.
-
-@item
-If static features are derived too easier, they may be skewed by the
-structure of the input code. @c Not really a problem
 @end itemize
 
-MAGEEC is open source under the GPL license. The aim is that by doing
-this MAGEEC can be freely implemented in as wide range of compilers as
-possible.
+@section MAGEEC features
 
 The design of MAGEEC makes it possible to use a variety of machine
 learners through a common interface, and makes it possible to use
@@ -253,42 +276,54 @@ both command-line driven proprietary compilers, and open source
 compilers. The interface to MAGEEC can either be a wrapper around
 the compiler (ideal for a proprietary compiler), or can integrate
 in the compiler itself, possibly through a plugin interface. Deeper
-integration beneficial as it may allow compilation controlling
+integration is beneficial as it may allow compilation controlling
 decision to be made at a finer granularity than program or module
 level.
 
-@section Comparison with MAGEEC
+@c Diagram of internal/external MAGEEC control
 
-The original MAGEEC was aimed at optimizing for energy on embedded
-systems. The aim of this updated version was to also target high
-performance application and also to improve the workflow to make
-the optimization process more robust.
+MAGEEC is open source under the GPL license. The aim is that by doing
+this MAGEEC can be freely implemented in as wide range of compilers as
+possible.
+
+@section Comparison with original MAGEEC project
+
+The original MAGEEC project aimed at optimizing energy consumption
+on embedded systems. The aim of this updated was to additionally
+target high performance applications as well as improve the workflow
+to make using MAGEEC more straightforward for users.
 
 @section MAGEEC components
 
-@c @image High level diagram of gather+train with compiler, possibly later? (workflow?)
+@image{"gather-high-level"} @c filename[, width[, height[, alttext[, extension]]]]}
+@image{"optimize-high-level"} @c filename[, width[, height[, alttext[, extension]]]]}
 
-MAGEEC itself is not a machine learner, and is instead a
-set of components and utilities which allow a compiler to
-be intrumented with some 'machine-learning' capabilities. This
-includes:
+MAGEEC itself is made up of a set of components and utilities which
+allow a compiler to be instrumented with the ability to predict
+good parameters to use in the compilation using machine learners.
+The components in MAGEEC include:
 
 @itemize
 @item
-An interface to derive static features from an input program
-(GCC feature extraction)
+An interface to derive static features from an input program, as
+well as an implementation of a feature extractor for GCC.
 
 @item
-A mechanism to drive the compiler to exercise various
-parameters during the gather phase. (GCC wrapper)
+A mechanism to drive a compiler to exercise various parameters
+during the compilation phase. Currently this is implemented for
+GCC as wrapper around the GCC frontend which can alter
+optimization flags on a module-by-module basis.
 
 @item
-A file format to record features, compilations, and results
-in a centralized place. (SQLite)
+A file format to record features, compilations and results
+for programs units in a centralized place. This is implemented
+through an SQLite3 database.
 
 @item
-An interface to a number of machine learners, and the
-machine learners themselves.
+An interface which can be implemented by machine learners to
+be used with the framework. In addition to this, basic
+machine learners are provided in the form of the C5.0 classifier
+and a 1NN machine learner.
 
 @item
 Tools and scripts to access the file, and drive the training
@@ -303,8 +338,6 @@ their current implementations.
 
 @subsection Feature extraction
 
-@subsubsection Interface
-
 Feature extraction involves taking an input source program, and
 outputting a set of features for each of the individual
 program units in the program. Each source file can produce
@@ -312,6 +345,8 @@ multiple sets of features for each different program unit in
 the file. So the module will produce a feature set, and each
 function could produce its own feature set. It is even feasible
 that feature could be generated for each basic block or loop.
+
+@subsubsection Interface
 
 MAGEEC provides an interface to create a set of features. How
 exactly the features are extracted is up to the program doing the
@@ -328,6 +363,9 @@ receive a unique identifier for those features back.
 
 @subsubsection GCC plugin
 
+@c @image High level diagram of feature extraction process
+@c @image Diagram of feature extractor plugin process
+
 As well as the interface to the feature extractor, a feature
 extractor plugin in also provided for the GCC compiler. This
 plugin can be provided as a plugin to gcc, and used to
@@ -342,15 +380,288 @@ The benefit of the GCC feature extractor is that it allows feature
 extraction to be performed on C, C++ and Fortran code without
 requiring a compiler-specific feature extractor to be written.
 Provided code can be built with GCC, feature extraction can be
-achieved. This makes it ideal for instrumenting propreitary
+achieved. This makes it ideal for instrumenting proprietary
 compilers.
 
-The features extracted by the GCC feature extractor are as follows:
+The feature extractor extracts different sets of features
+depending on whether a function or a module is the program unit
+under compilation. The features extracted for modules are for
+the most part just aggregated values based on the values for
+each function in that module. The full features for modules
+and functions is as follows:
 
-@c List of features
-@c Description of features
-@c @image High level diagram of feature extraction process
-@c @image Diagram of feature extractor plugin process
+@subsubheading GCC plugin function features
+
+@multitable @columnfractions .25 .75
+@headitem Feature name @tab Description
+@item Argument count @tab Number of arguments to the function
+@c @item Cyclomatic Complexity @tab Cyclomatic complexity of the function
+@item CFG edges @tab Number of control flow graph edges
+@item Abnormal CFG edges @tab Number of abnormal control flow graph edges
+@c @item Critical Path Length @tab Length of the critical path through the function
+
+@c loops
+@item Loop count @tab Number of loops in the function
+@item Min loop depth @tab Minimum depth of loop in the function
+@item Max loop depth @tab Maximum loop depth in the function
+@item Loop depth range @tab Difference between the max and minimum loop lengths
+@item Mean loop repth @tab Average depth of loops in the function
+@item Median loop depth @tab Median depth of loops in the function
+@item Loops of depth 1 @tab Count of loops of depth 1
+@item Loops of depth 2 @tab Count of loops of depth 2
+@item Loops of depth >2 @tab Count of loops of depth >2
+
+@c basic blocks
+@item Basic block count @tab Count of basic blocks in the function
+@item Basic blocks in loop @tab Number of basic blocks in the function inside a loop
+@item Basic blocks outside loop @tab Number of basic blocks in the function outside a loop
+@item Max basic block successors @tab Maximum number of successors for any basic block
+@item Min basic block successors @tab Minimum number of successors for a basic block
+@item Basic block successors range @tab Different between the maximum and minimum number of successors in a basic block
+@item Mean basic block successor count @tab Average number of successors for a basic block
+@item Median basic block successor count @tab Median number of successors for a basic block
+@item Max basic block predecessors @tab Maximum number of predecessors for any basic block
+@item Min basic block predecessors @tab Minimum number of predecessors for a basic block
+@item Basic block predecessors range @tab Different between the maximum and minimum number of predecessors in a basic block
+@item Mean basic block predecessors count @tab Average number of predecessors for a basic block
+@item Median basic block predecessors count @tab Median number of predecessors for a basic block
+@item Basic blocks with 1 predecessor @tab Count of basic blocks with 1 predecessor
+@item Basic blocks with 2 predecessors @tab Count of basic blocks with 2 predecessors
+@item Basic blocks with >2 predecessors @tab Count of basic blocks with >2 predecessors
+@item Basic blocks with 1 successor @tab Count of basic blocks with 1 successor
+@item Basic blocks with 2 successors @tab Count of basic blocks with 2 successors
+@item Basic blocks with >2 successors @tab Count of basic blocks with >2 successors
+@item Basic blocks with 1 predecessor, 1 successor @tab Count of basic blocks with 1 predecessor and 1 successor
+@item Basic blocks with 1 predecessor, 2 successors @tab Count of basic blocks with 1 predecessor and 2 successors
+@item Basic blocks with 2 predecessors, 1 successor @tab Count of basic blocks with 2 predecessors and 1 successor
+@item Basic blocks with 2 predecessors, 2 successors @tab Count of basic blocks with 2 predecessors and 2 successors
+@item Basic blocks with >2 predecessors, >2 successors @tab Count of basic blocks with >2 predecessors and >2 successors
+
+@c instruction counts
+@item Instruction count @tab Total number of instructions in the function
+@item Max instruction count @tab Max number of instructions in a basic block
+@item Mean instruction count @tab Average number of instructions in basic blocks
+@item Median instruction count @tab Median instructions in basic blocks
+
+@item Conditional statement count @tab Total number of conditional statements in the function
+@item Max conditional statement count @tab Max number of conditional statements in a basic block
+@item Mean conditional statement count @tab Average number of conditional statements in a basic block
+@item Median conditional statement count @tab Median number of conditional statements in a basic block
+
+@item Direct call count @tab Total number of direct calls in the function
+@item Max direct call count @tab Max number of direct calls in a basic block
+@item Mean direct call count @tab Average number of direct calls in a basic block
+@item Median direct call count @tab Median number of direct calls in a basic block
+
+@item Indirect call count @tab Total number of indirect calls in the function
+@item Max indirect call count @tab Max number of indirect calls in a basic block
+@item Mean indirect call count @tab Average number of indirect calls in a basic block
+@item Median indirect call count @tab Median number of indirect calls in a basic block
+
+@item Integer operations count @tab Total number of integer operations in the function
+@item Max integer operations count @tab Max number of integer operations in a basic block
+@item Mean integer operations count @tab Average number of integer operations in a basic block
+@item Median integer operations count @tab Median number of integer operations in a basic block
+
+@item Floating point operations count @tab Total number of floating point operations in the function
+@item Max floating point operations count @tab Max number of floating point operations in a basic block
+@item Mean floating point operations count @tab Average number of floating point operations in a basic block
+@item Median floating point operations count @tab Median number of floating point operations in a basic block
+
+@item Unary operations count @tab Total number of unary operations in the function
+@item Max unary operations count @tab Max number of unary operations in a basic block
+@item Mean unary operations count @tab Average number of unary operations in a basic block
+@item Median unary operations count @tab Median number of unary operations in a basic block
+
+@item Pointer arithmetic operations count @tab Total number of pointer arithmetic operations in the function
+@item Max pointer arithmetic operations count @tab Max number of pointer arithmetic operations in a basic block
+@item Mean pointer arithmetic operations count @tab Average number of pointer arithmetic operations in a basic block
+@item Median pointer arithmetic operations count @tab Median number of pointer arithmetic operations in a basic block
+
+@item Unconditional branches count @tab Total number of unconditional branches in the function
+@item Max unconditional branches count @tab Max number of unconditional branches in a basic block
+@item Mean unconditional branches count @tab Average number of unconditional branches in a basic block
+@item Median unconditional branches count @tab Median number of unconditional branches in a basic block
+
+@item Assign operations count @tab Total number of assignment operations in the function
+@item Max assign operations count @tab Max number of assignment operations in a basic block
+@item Mean assign operations count @tab Average number of assignment operations in a basic block
+@item Median assign operations count @tab Median number of assignment operations in a basic block
+
+@item Switch statements count @tab Total number of switch statements in the function
+@item Max switch statements count @tab Max number of switch statements in a basic block
+@item Mean switch statements count @tab Average number of switch statements in a basic block
+@item Median switch statements count @tab Median number of switch statements in a basic block
+
+@item Phi nodes count @tab Total number of phi nodes in the function
+@item Max phi nodes count @tab Max number of phi nodes in a basic block
+@item Mean phi nodes count @tab Average number of phi nodes in a basic block
+@item Median phi nodes count @tab Median number of phi nodes in a basic block
+@item Phi header nodes count @tab Total number of phi header nodes in the function
+@item Max phi header nodes count @tab Max number of phi header nodes in a basic block
+@item Mean phi header nodes count @tab Average number of phi header nodes in a basic block
+@item Median phi header nodes count @tab Median number of phi header nodes in a basic block
+@item Max arguments to phi nodes @tab Max number of arguments to a phi node
+@item Mean arguments to phi nodes @tab Average number of arguments to phi nodes
+@item Medium arguments to phi nodes @tab Median number of arguments to phi nodes
+@item Phi node arguments count between 1 and 5 @tab Number of phi nodes with between 1 and 5 arguments
+@item Phi nodes with >5 arguments @tab Number of phi nodes with >5 arguments
+
+@item Max arguments to call instructions @tab Max number of arguments to a call instruction
+@item Mean arguments to call instructions @tab Average number of arguments to call instructions
+@item Medium arguments to call instructions @tab Medium number of arguments to call instructions
+@item Calls with 0 arguments count @tab Number of calls taking no arguments
+@item Calls with >=1 and <=3 arguments @tab Number of calls with between 1 and 3 arguments
+@item Calls with >3 arguments @tab Number of calls with >3 arguments
+@item Max pointer arguments to calls @tab Maximum number of pointer arguments to call instructions
+@item Mean pointer arguments to calls @tab Average number of pointer arguments to call instructions
+@item Median pointer arguments to calls @tab Median number of pointer arguments to call instructions
+@item Number of calls returning integers @tab Number of call instructions returning integers
+@item Number of calls returning floating point @tab Number of call instructions returning floating point values
+@end multitable
+
+@subsubheading GCC plugin module features
+
+@multitable @columnfractions .25 .75
+@headitem Feature name @tab Description
+@item Function count @tab Number of functions in the module
+@item SCC count @tab Number of strongly connected components in the module
+@item Integer returning function count @tab Number of functions returning integers
+@item Floating point returning function count @tab Number of functions returning floating-point values
+
+@c loops
+@item Min loop depth @tab Min loop depth in functions in the module
+@item Max loop depth @tab Max loop depth in functions in the module
+@item Mean loop depth @tab Average loop depth in functions in the module
+@item Median loop depth @tab Median loop depth in functions in the module
+@item Loops of depth 1 @tab Count of loops of depth 1
+@item Loops of depth 2 @tab Count of loops of depth 2
+@item Loops of depth >2 @tab Count of loops of depth >2
+
+@c functions
+@item Min arguments to function @tab Min number of arguments to functions
+@item Max arguments to function @tab Max number of arguments to functions
+@item Range of arguments to function @tab Difference between the max and min number of arguments to functions
+@item Mean arguments to function @tab Average number of arguments to functions
+@item Median argument to function @tab Median number of arguments to functions
+@c @item Min cylomatic complexity of function @tab Min cyclomatic complexity of functions
+@c @item Max cylomatic complexity of function @tab Max cyclomatic complexity of functions
+@c @item Range of cylomatic complexity of functions @tab Difference between the max and min cyclomatic complexity of functions
+@c @item Mean cylomatic complexity of function @tab Average cyclomatic complexity of functions
+@c @item Median cylomatic complexity of function @tab Median cyclomatic complexity of functions
+@item Min CFG edges in functions @tab Min number of control flow graph edges of functions
+@item Max CFG edges in functions @tab Max number of control flow graph edges of functions
+@item Range of CFG edges in functions @tab Difference between the max and min number of control flow graph edges of functions
+@item Mean number of CFG edges in functions @tab Average number of control flow graph edges in functions
+@item Median number of CFG edges in functions @tab Median number of control flow graph edges in functions
+@item Min abnormal CFG edges in functions @tab Min number of abnormal control flow graph edges of functions
+@item Max abnormal CFG edges in functions @tab Max number of abnormal control flow graph edges of functions
+@item Range of abnormal CFG edges in functions @tab Difference between the max and min number of abnormal control flow graph edges of functions
+@item Mean number of abnormal CFG edges in functions @tab Average number of abnormal control flow graph edges in functions
+@item Median number of abnormal CFG edges in functions @tab Median number of abnormal control flow graph edges in functions
+@c @item Min critical path length of functions @tab Min critical path length of functions
+@c @item Max critical path length of functions @tab Max critical path length of functions
+@c @item Range of critical path length of functions @tab Different between the max and min critical path length of functions
+@c @item Mean critical path length of functions @tab Average critical path length of functions
+@c @item Median critical path length of functions @tab Median critical path length of functions
+
+@item Loop count @tab Number of loops in the module
+@item Max loop count @tab Max number of loops in a function
+@item Min loop count @tab Min number of loops in a function
+@item Mean loop count @tab Average number of loops in a function
+@item Median loop count @tab Median number of loops in a function
+
+@item Basic block count @tab Number of basic blocks in the module
+@item Max basic block count @tab Max number of basic blocks in a function
+@item Min basic block count @tab Min number of basic blockss in a function
+@item Mean basic block count @tab Average number of basic blocks in a function
+@item Median basic block count @tab Median number of basic blocks in a function
+@item Basic blocks in loop @tab Number of basic blocks in a loop in the module
+@item Max basic blocks in loop @tab Max number of basic blocks in a loop in a function
+@item Min basic blocks in loop @tab Min number of basic blocks in a loop in a function
+@item Range of basic blocks in loop @tab Difference between the max and min number of basic blocks in a loop in a function
+@item Mean basic blocks in loop @tab Average number of basic blocks in a loop in a function
+@item Median basic blocks in loop @tab Median number of basic blocks in a loop in a function
+@item Basic blocks outside loop @tab Number of basic blocks outside a loop in the module
+@item Max basic blocks outside loop @tab Max number of basic blocks outside a loop in a function
+@item Min basic blocks outside loop @tab Min number of basic blocks outside a loop in a function
+@item Range of basic blocks outside loop @tab Difference between the max and min number of basic blocks outside a loop in a function
+@item Mean basic blocks outside loop @tab Average number of basic blocks outside a loop in a function
+@item Median basic blocks outside loop @tab Median number of basic blocks outside a loop in a function
+
+@c instructions
+@item Instruction count @tab Total number of instructions in the module
+@item Max instruction count @tab Max number of instructions in a function
+@item Min instruction count @tab Min number of instructions in a function
+@item Range of instruction count @tab Difference between max and min number of instructions in a function
+@item Mean instruction count @tab Average number of instructions in a function
+@item Median instruction count @tab Median instructions in a function
+
+@item Conditional statement count @tab Total number of conditional statements in the module
+@item Max conditional statement count @tab Max number of conditional statements in a function
+@item Min conditional statement count @tab Min number of conditional statements in a function
+@item Range of conditional statement count @tab Difference between max and min number of conditional statements in a function
+@item Mean conditional statement count @tab Average number of conditional statements in a function
+@item Median conditional statement count @tab Median number of conditional statements in a function
+
+@item Direct call count @tab Total number of direct calls in the module
+@item Max direct call count @tab Max number of direct calls in a function
+@item Min direct call count @tab Min number of direct calls in a function
+@item Range of direct call count @tab Difference between max and min number of direct calls in a function
+@item Mean direct call count @tab Average number of direct calls in a function
+@item Median direct call count @tab Median number of direct calls in a function
+
+@item Indirect call count @tab Total number of indirect calls in the module
+@item Max indirect call count @tab Max number of indirect calls in a function
+@item Min indirect call count @tab Min number of indirect calls in a function
+@item Range of indirect call count @tab Difference between max and min number of indirect calls in a function
+@item Mean indirect call count @tab Average number of indirect calls in a function
+@item Median indirect call count @tab Median number of indirect calls in a function
+
+@item Integer operations count @tab Total number of integer operations in the module
+@item Max integer operations count @tab Max number of integer operations in a function
+@item Mean integer operations count @tab Average number of integer operations in a function
+@item Median integer operations count @tab Median number of integer operations in a function
+
+@item Floating point operations count @tab Total number of floating point operations in the module
+@item Max floating point operations count @tab Max number of floating point operations in a function
+@item Mean floating point operations count @tab Average number of floating point operations in a function
+@item Median floating point operations count @tab Median number of floating point operations in a function
+
+@item Unary operations count @tab Total number of unary operations in the module
+@item Max unary operations count @tab Max number of unary operations in a function
+@item Mean unary operations count @tab Average number of unary operations in a function
+@item Median unary operations count @tab Median number of unary operations in a function
+
+@item Pointer arithmetic operations count @tab Total number of pointer arithmetic operations in the module
+@item Max pointer arithmetic operations count @tab Max number of pointer arithmetic operations in a function
+@item Mean pointer arithmetic operations count @tab Average number of pointer arithmetic operations in a function
+@item Median pointer arithmetic operations count @tab Median number of pointer arithmetic operations in a function
+
+@item Unconditional branches count @tab Total number of unconditional branches in the module
+@item Max unconditional branches count @tab Max number of unconditional branches in a function
+@item Mean unconditional branches count @tab Average number of unconditional branches in a function
+@item Median unconditional branches count @tab Median number of unconditional branches in a function
+
+@item Assign operations count @tab Total number of assignment operations in the module
+@item Max assign operations count @tab Max number of assignment operations in a function
+@item Mean assign operations count @tab Average number of assignment operations in a function
+@item Median assign operations count @tab Median number of assignment operations in a function
+
+@item Switch statements count @tab Total number of switch statements in the module
+@item Max switch statements count @tab Max number of switch statements in a function
+@item Mean switch statements count @tab Average number of switch statements in a function
+@item Median switch statements count @tab Median number of switch statements in a function
+
+@item Phi nodes count @tab Total number of phi nodes in the module
+@item Max phi nodes count @tab Max number of phi nodes in a function
+@item Mean phi nodes count @tab Average number of phi nodes in a function
+@item Median phi nodes count @tab Median number of phi nodes in a function
+@item Phi header nodes count @tab Total number of phi header nodes in the module
+@item Max phi header nodes count @tab Max number of phi header nodes in a function
+@item Mean phi header nodes count @tab Average number of phi header nodes in a function
+@item Median phi header nodes count @tab Median number of phi header nodes in a function
+@end multitable
 
 @subsection Compiler driver
 
