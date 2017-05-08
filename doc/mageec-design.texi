@@ -419,15 +419,18 @@ a machine learner.
 For optimization, an interface is also offered which allows the driver
 to use a previously trained machine learner to make decisions about
 parameters. The driver can query a machine learner with a set of
-feature, and receive a decision. It can then use this decision to control
-the compilation of a program unit.
+features as well as a parameter to make a decision about. It then
+receives a decision which it can use to inform its choice about
+the value the parameter should take for the compilation of a 
+program unit.
 
 @subsection GCC wrapper driver
 
 MAGEEC offers one concrete interface to drive GCC for training and
-optimization purposes which takes the form of a GCC wrapper. This
-driver is a wrapper around the gcc/gfortran/g++ drivers, which
-intecepts and controls the optimization flags passed to it.
+optimization purposes which takes the form of a wrapper around the
+GCC frontend. This wraps around the gcc, gfortran and g++ drivers
+in order to intercept and control the optimization flags passed
+to those commands.
 
 When training, the driver tracks the optimization flags being used
 with the driver and records a compilation in the database for each
@@ -443,12 +446,15 @@ does not require any invasive changes to the compiler in order to
 control the passes. It also supports multiple version of GCC easily
 and can support Fortran and C++ code through the same driver.
 Additionally because it uses the public documented interface to the
-compiler, it is more stable as it cannot create broken pass pipelines <-- WUT? -->
+compiler, it is more stable as it should not be able to create
+an invalid set of passes.
 
 A disadvantage of the GCC driver is that it is only able to make decisions on
 a per-module level. If the driver instead operated internally to GCC it could
 be possible to enable or disable passes on a per function basis. This
 severely limits the optimization potential.
+
+@c more detail on this bit
 
 @c Flags vs internal pass decisions
 @c High level diagram of compilation process for gather+optimize
@@ -475,11 +481,11 @@ intermediate format:
 @itemize
 @item
 The data by its nature contains relations which make it conducive
-to using a database. By using a database, this relations can be
+to using a database. By using a database, these relations can be
 maintained and enforced.
 
 @item
-The database is a familiar conceptual model which is easier to
+The database is a familiar conceptual model which is easy to
 understand.
 
 @item
@@ -494,17 +500,17 @@ and require reimplementing functionality already offered by
 SQLite.
 
 @item
-SQLite is quite high performance, and offers resilience against
-corrupt data out of the box.
+SQLite is high performance, and offers resilience against
+data corruption out of the box.
 @end itemize
 
 The main disadvantage to using SQLite is that it adds some
 complexity to the interfaces, and requires more boilerplate code
-to interface than a simpler flat file solution would.
+to interface than a simpler flat file would.
 
 @subsubsection Database structure
 
-Below is a description of the file format structure and the
+Below is a description of the database structure and the
 associated relations.
 
 @c @image Database structure diagram
@@ -548,15 +554,21 @@ is guaranteed by the feature extractor to unique identify the
 same feature every time, and the type is one of a number of
 types specified by MAGEEC.
 
+@c Why is it specified by MAGEEC
+
 The parameters which are provided to the machine learner also
 have a unique identifier which is guaranteed to identify the
 same parameter in the compiler which is being used. The
 types of the parameters is also an identifier for a type specified
 by MAGEEC.
 
+@c Why is it specified by MAGEEC
+
 @c Feature types parameter types, decisions?
 
 Currently, there is no ability to do incremental learning.
+
+@c Why not possible to do incremental learning
 
 @c @image Diagram of machine learner inputs and outputs for train + optimize
 
@@ -610,9 +622,6 @@ decision needs to be made, the closest feature set to the input
 set is found in the training data, and the decision is made based
 on the parameters in that closest point.
 
-1-NN is a very simply classification technique, and is very easy
-to understand. 
-
 @c @image Diagram of 1NN classification for MAGEEC
 
 @subsection Tooling
@@ -632,7 +641,8 @@ command line tool.
 
 This script exists to build and feature extract a program using the
 GCC feature extractor plugin. It simplifies the interface to the
-plugin, and automatically handles autoconf and CMake build systems.
+plugin, and abstracts away building of projects with autoconf and
+CMake build systems.
 
 @subsubsection Combined elimination script
 
@@ -685,7 +695,7 @@ up the executable.
 The aim of the gathering process is to find sets of parameters
 which minimize the cost function (with the aim to beat the
 default configurations of the compiler), and there are a few ways
-to find this set.
+to find these parameter sets.
 
 The ideal approach would be to do an exhaustive search of the
 parameter space to find the absolute best set of flags. If
@@ -694,8 +704,8 @@ best result has been found. The problem with this approach
 is that it is simply not possible to do an exhaustive search
 of the parameter space. For a compiler such as GCC where there
 are approximately 100 boolean optimization flags which can be
-configured, there are 2^100 combinations which would need to
-be tested.
+configured, there are 2^100 flag combinations which would need
+to be tested.
 
 Since an exhaustive search is not feasible, an alternative is
 to only search a subset of the full search space. There are
@@ -718,52 +728,366 @@ be excluded
 @end itemize
 
 Taking factors like this into account, it is possible to
-trim down the search space considerably. Using techniques such
-as fractional factorial design can be used to only test
-a subset of combinations. In some cases, this is viable, however
-for many programs used in the training process, compilation
-times may be sufficiently high that it is worth looking for
-better solutions.
+trim down the search space considerably. Using techniques like
+principle component analysis and fractional factorial design
+to create a training set it is possible to reduce the amount
+of test runs that need to be done considerably. In some cases,
+this approach is viable, however for many programs used in the
+training process compilation times may be sufficiently high
+that it is worth looking for better solutions.
 
 In order to minimize the number of tests, incremental compilation
-can be used in order to hill-climb towards better solutions.
+techniques can be used in order to hill climb towards solutions
+which beat the most aggressive optimization options like -O3.
 There are various techniques that can be used for this, however
-combined-elimination is straightforward and has been demonstrated
-to find promising results.
+combined elimination is straightforward and has been demonstrated
+to find promising results. @c citation of exact results
 
-Incremental compilation suffers from the risk that only a local
-minima is found, however provided this local minima is still
-an improvement over the default compiler behavior, this is
-a trade-off worth making.
+Many incremental compilation techniques suffer from the risk
+of only finding a local minima, rather than a global minima, and
+this is true of combined elimination too. Provided the local
+minima is still an improvement over the default compilation
+optimizations this is not a major concern, and is a trade-off
+working making in order to reduce the search space.
 
-Another major component to the gathering process is the set
-of benchmarks which are used. The benchmarks needs to be
-representative of the types of programs which will be used
-with the compiler. They also need to be varied, so that the
-feature sets gather cover as many potential input programs as
-possible, and most importantly they need to be numerous.
-Machine learning requires a glut of data to produce reliable
-results, so having a lot of benchmarks containing a lot of
-modules and functions is important.
+Aside from the process used to guide the search, another
+important component is the set of benchmarks which are used.
+The benchmarks need to be representative of the types of
+programs which will be used with the compiler. They also
+need to be varied so that the features gathered for
+the benchmarks are as representative as possible of
+the features which will manifest in any potential real-world
+programs. Most importantly though is that there need to
+be a lot of benchmarks. Machine learners require a glut of
+data to produce reliable and predictable results, so having
+a lot of benchmarks with as many program units (modules and
+functions) as possible is key.
 
 After the benchmarks have been run under a large number of
-configurations, and they have been measured and their results
-gathered into MAGEEC, they can be trained. Training involves
-invoking the machine learner to produce a training blob
-which is stored and used at a later point.
+configurations, the quality of the resultant executables
+can be measures and the results gathered in MAGEEC. After
+results have been gathered, machine learners can be
+trained. Training involves invoking a machine learner with
+the results data in order to produce a blob of training
+data which can be stored to be used when optimizing at a
+later point.
 
 @subsection Optimizing
 
-In comparison to gathering and training, the optimizing phase is
-much simpler. Here a new program has its features extracted, and
-these features are then passed to MAGEEC along with decisions
-which need to be made. The decisions about parameters are made,
-and this is used to inform the compilation of the program.
+In comparison to gathering and training, the optimizationg phase
+is very straightfoward. Here a previously unseen program has its
+features extracted, and these features are passed to a machine
+learner by the compiler through MAGEEC. The features are
+accompanied by a decision to make, which is a parameter which
+the machiner learner was previously trained to make decisions
+against. This parameter could correspond to an optimization
+flag to be enabled or disabled, or an internal heuristic value
+to be tuned. The machine learner will provide a decision to
+the compiler, and the compiler can use this to update the
+parameters which will be used to compile the program unit.
 
-The result should be a binary which is more optimal than would
-be produced by the default compiler.
+The result of this process should be a binary which is more
+optimal than the binary which would have been produced by the
+original compiler.
 
 @section Experimentation
+
+The previous sections have described the theory and design of
+MAGEEC. Now we describe an experiment designed to test the
+framework, and its results and conclusion.
+
+@subsection Motivation
+
+@c Should be a more key part of this paper?
+
+Current compilers generally optimize for speed, and
+occasionally for size. One of the advantages of the
+approach we have proposed is that it makes it possible
+and easy to target any other metric which is quantifiable.
+
+One of the key goals of MAGEEC is to optimize to reduce
+the energy consumption of programs. The current approach
+to optimizing for energy is based on the assumptions that
+speed and energy usage are closely intertwined, and
+therefore simply optimizing for speed is sufficient.
+Previous work by @c Cite
+demonstrated that this is not always the case. MAGEEC
+seeks to build on this to make it possible to automatically
+specialize a compiler's configuration to reduce energy consumption.
+
+Presently, much work is going into the task of reducing
+energy consumption. This is important in multiple fields.
+In embedded systems, this translates into more computational
+power from smaller devices; and in HPC this can result in
+reduced electricity bills. Reducing energy consumption can
+also allow for new technology to be made viable. For example
+a reduction in energy consumption used by a processor may
+mean that it is viable to power it from solar energy.
+
+The original MAGEEC project looked at reducing energy
+consumption in embedded systems. This project has built on
+this work and aims to demonstrate that this is also
+applicable to high performance computing applications. HPC
+systems are used extensively for research, where
+large amounts of computing resources are needed to performance
+massive distributed simulations. Building a modern supercomputer
+is expensive, however the energy cost of running a supercomputer
+also forms a substantial cost of the system over its lifetime.
+Any steps which reduce the energy consumption of the system
+would therefore either reduce the energy bill of running the
+system, or allow a more powerful system to be built in the
+same power budget.
+
+@c statistics
+
+@subsection Metrics
+
+MAGEEC was designed to be useable with any metric, however
+the aim of the project is to reduce energy consumption
+for HPC application, therefore the energy metric was
+targeted in experiments.
+
+Energy poses some unique challenges to measure
+accurately, and is harder to achieve than measuring
+program speed.
+
+The first barrier when measuring energy is obtaining
+accurate results, as there are many ways in which
+energy values can become skewed:
+
+@itemize
+@item Scheduling of processes by the operating system can
+cause variations betweens, as the process may be preempted
+or moved between processes
+
+@item Modern processor dynamically change their clock
+frequency which affects energy consumption in unpredictable
+ways.
+
+@item The physical core which benchmarks run on may
+differ slightly, causing measurement error.
+
+@item NUMA and inter-process communication energy usage
+may vary considerably depending on which physical cores
+a given process is executed on.
+
+@item Sampling of energy results will have some effect
+on the execution of the program.
+
+@item A sampling rate which is too coarse may produce
+an inaccurate profile of the program energy usage.
+@end itemize
+
+Some of these problems can be mitigated. For example on
+many systems it may be possible to clock the clock
+speed of processor cores. Equally, it is possible to
+minimize the number of other processes running on
+many systems to reduce interruption caused by the
+sharing of resources. Indeed on HPC systems the
+environment in which a program is run can be controlled
+to the extend that it is possible to get accurate
+energy measurement results @c cite example of accuracy
+
+A second difficulty is accurately associating sampled
+results with program units in the input program. The aim
+of optimizing for energy is to reduce the amount of
+energy spent when executing a function in the program.
+This requires an accurate average for how much energy
+was spent for each invocation of that function. However
+when measuring energy consumption through sampling, we
+can only determine the total amount of energy spent in a
+function throughout the run of the program. Therefore,
+to obtain the average amount of energy per function
+invocation we must take the total and divide it by the
+number of calls to that function. This then gives us
+an estimate for the average energy used in the function.
+
+@c Describe per function energy measurement better
+
+For our purposes, we are running on a machine running
+at a fixed frequency, with no other competeting
+processes. Therefore, we can be reasonably confident
+in the accuracy of our energy measurement. In order
+to extract energy measurements, we use the Allinea
+MAP framework.
+
+@c Quantify accuracy of the energy measurement
+
+@subsubsection Allinea MAP
+
+Allinea MAP is a profiler for C/C++ and Fortran code.
+It is able to profile OpenMP, MPI and ptheads code
+with minimal overhead, which makes it ideal for
+profiling HPC codes. As well as a user interface,
+it can also output profiles in various formats
+which can be used by other tools.
+
+@subsection Benchmarks
+
+For use when training, there are some desirable properties
+which should be covered by the benchmark.
+
+@itemize
+@item
+The benchmark needs to containg a large number of program
+units. This means that the benchmark should containing a
+lot of modules and functions. Each module and function
+will provide a single distinct feature set, and the number
+of feature sets needs to be maximized in order to improve
+the quality of any training.
+
+@item
+The benchmark should be straightforward to build. It
+needs to be possible to pass flags to the compiler in
+order to control the compile options, and
+this requires the build system to not get in the way.
+Ideally, the compilation time should be relatively low too.
+
+@item
+It must be straightforward to instrument and run the
+resultant programs to derive results. For some metrics
+such as code size it is not necessary to actually run
+the executable produced by a test run, but for metrics
+like energy it is important to be able to run under
+a profiler in order to derive energy measurements.
+
+@item
+Representative input data. The input data used when
+measuring the program must be representative of the
+kind of data which would be provided to a similar
+program in real-code.
+
+@item
+Controllable runtime. In order to accurately take
+time and energy measurements it may be necessary to
+run for a long time under a profiler. If the program
+does not run for sufficiently long then results will
+be inaccurate, if it runs for too long then it will
+increase the time of training considerably.
+
+@item
+Representaive code for the target system. For HPC
+applications it is good to train against representative
+HPC code.
+
+@item 
+Minimal external dependencies. Any time or energy
+spent in external libraries cannot be associated with
+any compiled program unit and therefore can't be
+used by the machine learner or help with training.
+
+@item
+Minimal disk access. The amount of disk access
+cannot be realistically affected by changing compilation
+parameters, so any time or energy spent on disk
+or file access will only serve to skew result values.
+
+@end itemize
+
+These requirements restrict the pool of available
+code considerably. For our experiments, we sought
+to optimize for energy on HPC systems, so the
+benchmarks needed to be representative code to
+run on HPC systems.
+
+In the end, we settled on using a number of benchmarks
+from the Mantevo benchmark set.
+
+@c mantevo reference
+
+@subsubsection Mantevo
+
+Mantevo is a bunch of small benchmarks which contain
+common numerical kernels used in HPC applications. They
+have minimal external dependencies and the applications
+are build with simple Makefiles.
+
+The benefits of using Mantevo are:
+@itemize
+@item 
+Very representative code for common HPC applications
+
+@item
+A good range of different HPC codes
+
+@item
+Each program is relatively self contained and makes minimal
+use of external libraries.
+
+@item
+The programs are non-trivial and contain a reasonable number of
+modules and functions.
+
+@item
+A mixture of Fortran, C and C++ code
+
+@item
+The build systems for each program are simple makefiles, and
+can be easily adjusted if necessary.
+@end itemize
+
+The main disadvantage of using Mantevo is that there are only 10
+applications in total.
+@c number of apps
+
+The applications in Mantevo (version ???) are as follows:
+@multitable 
+@item CloverLeaf @tab A Lagrangian-Eulerian hydrodynamics benchmark @c cite
+@item CloverLeaf3D @tab A 3D Lagrangian-Eulerian hydrodynamics benchmark @c cite
+@item CoMD @tab A reference implementation of classic molecular dynamics algorithms @c cite
+@item HPCCG @tab High performance conjugate gradient benchmark @c cite
+@item MiniAero @tab Solver for the compressible Navier-Stokes equations @c cite
+@item MiniAMR @tab Adaptive mesh refinement @c cite
+@item MiniFE @tab Finite-element code @c cite
+@item MiniGhost @tab 3D nearest neighbor halo-exchange communication @c cite
+@item MiniMD @tab Molecular dynamics solver @c cite
+@item MiniSMAC2D @tab 2D incompressible Navier-Stokes algorithm @c cite
+@item MiniXyce @tab Linear circuit simulator @c cite
+@item Pathfinder @tab Graph search @c cite
+@item TeaLeaf @tab Linear heat conduction equation solver @c cite
+
+@subsection NEALE
+
+The testing of the MAGEEC framework was performed on a system
+called NEALE, a novel cooling demonstrator which is part of the
+Energy Efficient Computing Research Program at the STFC Hartree
+Centre. The specification of this system are as follows:
+
+@multitable @columnfractions 1 @c .75
+@item Architecture @tab Ivybridge
+@item Number of nodes @tab 120
+@item Node configuration @tab 2x 8 core Intel Xeon E5-2650v2xi 2.6GHz, 64GB RAM per node
+@item Total cores @tab 1920
+@item Total memory @tab 7.5TB
+@item Interconnect @tab QLogic (QDR-80)
+@item Storage @tab 216TB BeeGFS parallel storage
+@end multitable
+
+@c cite http://community.hartree.stfc.ac.uk/wiki/site/eecrp/eec_userguide.html
+
+The system uses the SLURM batch scheduler, and has support
+for profiling through Allinea MAP.
+
+The Ivybridge Xeon is a common processor used in many HPC systems.
+The large number of nodes makes it possible to run a large
+number of benchmark test runs in parallel.
+
+@subsection Experiment setup
+
+@c TODO
+
+@subsection Results
+
+@c TODO
+
+@section Conclusion
+
+@c TODO
+
+@section Future work
+
+@c TODO
+
 
 @c Features
 @c Machine learners
