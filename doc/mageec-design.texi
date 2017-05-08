@@ -1340,6 +1340,79 @@ is stored back in the database. This trained
 blob will be retrieved when the machine learner is
 used during the optimization phase.
 
+@subsubsection Optimization phase
+
+After the various databases were trained, they were
+used to try and optimize two different sets of
+programs; a subset of the Mantevo benchmarks,
+including benchmarks included in the training set
+as well as benchmarks not previously seen; and
+previously unseen programs, which formed a test
+of MAGEEC against real-world codes which need
+to be optimized.
+
+@subsubheading Testing against Mantevo benchmarks
+
+The databases used the following Mantevo benchmarks
+as sources of training data:
+
+@itemize
+@item CloverLeaf
+@item CloverLeaf3D
+@item CoMD
+@item MiniGhost
+@item MiniMD
+@item Pathfinder
+@item TeaLeaf
+@end itemize
+
+From these training sets, various trained databases
+were derived. A database trained against against
+all of the benchmarks, and seven databases trained
+against all of the benchmarks but excluding a single
+benchmark from each database in turn.
+
+Each of these databases was then used to try and
+optimize another set of the Mantevo benchmarks, which
+included the following programs:
+
+@itemize
+@item CloverLeaf
+@item CloverLeaf3D
+@item CoMD
+@item MiniAMR
+@item MiniFE
+@item MiniGhost
+@item MiniMD
+@item Pathfinder
+@item TeaLeaf
+@end itemize
+
+This set is the same as the training set, with the
+addition of the MiniAMR and MiniFE programs.
+
+All of the databases were used to optimize all of
+the above Mantevo programs, so in many cases
+a program was optimized which had already been
+encountered in the training data. This means
+that the results from these optimizations tests
+are a mixture of previously-unseen and
+previously-seen programs. The results will be analyzed
+in more detail in the results section.
+
+@subsubheading Blind test against new benchmarks
+
+As well as running tests against Mantevo benchmarks,
+a couple of tests were performed optimizing new
+benchmarks for real-world code. This served as a
+check of the effectiveness of MAGEEC for real
+programs.
+
+The programs used for this were as follows: ...
+
+@c TODO
+
+
 @c There are two phases to the experiment; a training phase
 @c where a subset of the Mantevo benchmarks are optimized
 @c using the combined elimination process and then used
