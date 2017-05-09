@@ -65,7 +65,8 @@ task which requires a lot of trial and error, and a lot of
 iterations of compilation.
 
 @c image of typical compile approach
-@image{"current-pass-pipelines"} @c filename[, width[, height[, alttext[, extension]]]]}
+@center @image{"images/current-pass-pipelines", 6in}
+@c filename[, width[, height[, alttext[, extension]]]]}
 
 From the perspective of the user, it would be reassuring to know
 that the compiler is not missing optimization opportunities. If the
@@ -120,7 +121,8 @@ between different metrics, such as balancing energy and size.
 @end itemize
 
 @c Diagram of more ideal optimization approach
-@image{"better-pass-pipelines"} @c filename[, width[, height[, alttext[, extension]]]]}
+@center @image{"images/better-pass-pipelines", 6in}
+@c filename[, width[, height[, alttext[, extension]]]]}
 
 @section Other optimization approaches
 
@@ -205,7 +207,9 @@ where the machine learner is used with a new, previously
 unencountered program and used to select a set of parameters
 which are likely to produce a good quality output executable.
 
-@c @image High level diagram of the process (with MAGEEC-instrumented compiler)
+@center @image{"images/high-level-gather", 6in}
+
+@center @image{"images/high-level-optimize", 6in}
 
 @section Comparison with other compiler tuning approaches
 
@@ -296,8 +300,8 @@ to make using MAGEEC more straightforward for users.
 
 @section MAGEEC components
 
-@image{"gather-high-level"} @c filename[, width[, height[, alttext[, extension]]]]}
-@image{"optimize-high-level"} @c filename[, width[, height[, alttext[, extension]]]]}
+@c @center @image{"gather-high-level", 6in}
+@c @center @image{"optimize-high-level", 6in}
 
 MAGEEC itself is made up of a set of components and utilities which
 allow a compiler to be instrumented with the ability to predict
@@ -331,8 +335,7 @@ Tools and scripts to access the file, and drive the training
 and optimization process.
 @end itemize
 
-@c @image High level diagram of MAGEEC components
-@c @image Design of MAGEEC in general
+@center @image{"images/high-level-components", 6in}
 
 We now describe each of these components in more detail, and
 their current implementations.
@@ -364,8 +367,7 @@ receive a unique identifier for those features back.
 
 @subsubsection GCC plugin
 
-@c @image High level diagram of feature extraction process
-@c @image Diagram of feature extractor plugin process
+@center @image{"images/feature-extractor", 6in}
 
 As well as the interface to the feature extractor, a feature
 extractor plugin in also provided for the GCC compiler. This
@@ -432,9 +434,13 @@ GCC frontend. This wraps around the gcc, gfortran and g++ drivers
 in order to intercept and control the optimization flags passed
 to those commands.
 
+@center @image{"images/compiler-driver-gather", 6in}
+
 When training, the driver tracks the optimization flags being used
 with the driver and records a compilation in the database for each
 program unit.
+
+@center @image{"images/compiler-driver-optimize", 6in}
 
 When optimizing, the driver strips optimization flags and instead
 replaces the flags with flags derived through multiple calls out
@@ -457,8 +463,6 @@ severely limits the optimization potential.
 @c more detail on this bit
 
 @c Flags vs internal pass decisions
-@c High level diagram of compilation process for gather+optimize
-@c @image Diagram of GCC wrapper driver process
 
 @subsection MAGEEC file format
 
@@ -513,7 +517,7 @@ to interface than a simpler flat file would.
 Below is a description of the database structure and the
 associated relations.
 
-@c @image Database structure diagram
+@center @image{"images/database", 6in}
 
 @subsection Machine learner interface
 
@@ -605,8 +609,7 @@ the classification for that decision. For a boolean decision, the
 resulting decision could be 'true', 'false', or 'native' if the
 machine learner is not able to make a decision.
 
-@c @image Diagram of classifier trees for MAGEEC
-@c @image Diagram of use of a classifer tree for MAGEEC
+@center @image{"images/c50", 6in}
 
 Advantages of C5.0 are that the interface is straightforward
 and the decision trees are human readable.
@@ -622,7 +625,7 @@ decision needs to be made, the closest feature set to the input
 set is found in the training data, and the decision is made based
 on the parameters in that closest point.
 
-@c @image Diagram of 1NN classification for MAGEEC
+@center @image{"images/1nn", 6in}
 
 @subsection Tooling
 
@@ -1031,7 +1034,8 @@ applications in total.
 @c number of apps
 
 The applications in Mantevo (version ???) are as follows:
-@multitable 
+
+@multitable @columnfractions .25 .75
 @item CloverLeaf @tab A Lagrangian-Eulerian hydrodynamics benchmark @c cite
 @item CloverLeaf3D @tab A 3D Lagrangian-Eulerian hydrodynamics benchmark @c cite
 @item CoMD @tab A reference implementation of classic molecular dynamics algorithms @c cite
@@ -1045,6 +1049,7 @@ The applications in Mantevo (version ???) are as follows:
 @item MiniXyce @tab Linear circuit simulator @c cite
 @item Pathfinder @tab Graph search @c cite
 @item TeaLeaf @tab Linear heat conduction equation solver @c cite
+@end multitable
 
 @subsection NEALE
 
@@ -1053,7 +1058,7 @@ called NEALE, a novel cooling demonstrator which is part of the
 Energy Efficient Computing Research Program at the STFC Hartree
 Centre. The specification of this system are as follows:
 
-@multitable @columnfractions 1 @c .75
+@multitable @columnfractions 0.25 .75
 @item Architecture @tab Ivybridge
 @item Number of nodes @tab 120
 @item Node configuration @tab 2x 8 core Intel Xeon E5-2650v2xi 2.6GHz, 64GB RAM per node
@@ -1458,6 +1463,16 @@ The programs used for this were as follows: ...
 @c Optimized for ...
 
 @subsection Results
+
+@c Extracting results of the benchmarks
+@c Table of results relative to -O3 + explanation of results
+
+@c Bar graph of results relative to -O3, benchmarks along bottom, different 
+@center @image{"results-bar-graph-1", 6in}
+@c filename[, width[, height[, alttext[, extension]]]]}
+
+@center @image{"results-bar-graph-2", 6in}
+@c filename[, width[, height[, alttext[, extension]]]]}
 
 @c Improvements over -O3
 @c Number of configurations of flags used
