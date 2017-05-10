@@ -1464,8 +1464,82 @@ The programs used for this were as follows: ...
 
 @subsection Results
 
-@c Extracting results of the benchmarks
-@c Table of results relative to -O3 + explanation of results
+We now look at the results from the experimental runs performed.
+First we look at the results from the tests against the benchmarks
+in the Mantevo set, and then we look at the results from the
+blind tests of a new HPC code.
+
+@subsubsection Mantevo benchmark results
+
+Below is a table of the results derived from the Mantevo
+benchmarks, when optimizing using MAGEEC (through the GCC
+wrapper driver) along with the various trained databases.
+
+@center @image{"results-table", 6in}
+
+There is a separate row for each benchmark which was
+optimized, and a separate column for each of the
+runs being compared. The meanings of the headers of
+the columns is as follows:
+
+@itemize
+@item O3 - A run of the benchmark at O3
+
+@item Os - A run of the benchmark at Os
+
+@item All Flags - A run of the benchmark where all available
+optimization flags were turned
+
+@item Combined Elimination (best) - The best run of the
+benchmark found in the combined elimination process.
+
+@item All benchmarks trained - Benchmarks optimized using
+the database holding the machine learner trained for all
+of the benchmarks in the trained set.
+
+@item No CloverLeaf3D - Benchmark optimized used a
+database holding a machine learner trained against all
+benchmarks except CloverLeaf3D.
+
+@item No CloverLeaf - Benchmark optimized used a
+database holding a machine learner trained against all
+benchmarks except CloverLeaf.
+
+@item No CoMD - Benchmark optimized used a
+database holding a machine learner trained against all
+benchmarks except CoMD.
+
+@item No MiniGhost - Benchmark optimized used a
+database holding a machine learner trained against all
+benchmarks except MiniGhost.
+
+@item No MiniMD - Benchmark optimized used a
+database holding a machine learner trained against all
+benchmarks except MiniMD.
+
+@item No PathFinder - Benchmark optimized used a
+database holding a machine learner trained against all
+benchmarks except PathFinder.
+
+@item No TeaLeaf - Benchmark optimized used a
+database holding a machine learner trained against all
+benchmarks except TeaLeaf.
+@end itemize
+
+The values in each cell are the energy usage of the
+run as a percentage of the O3 energy usage.
+
+The blue highlighted entries are the important entries.
+Those entries are the ones where the benchmark being
+optimized was not present in the set used to train
+the machine learner. They therefore represent how well
+the machine learner performs when it encountered a
+previously unseen benchmark.
+
+Note that MiniAMR and MiniFE never appeared in the
+training sets, so all of their values are highlighted.
+Also note a couple of entries where the value is '0',
+signifying no data was derived at that point.
 
 @c Bar graph of results relative to -O3, benchmarks along bottom, different 
 @center @image{"results-bar-graph-1", 6in}
