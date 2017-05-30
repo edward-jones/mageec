@@ -11,8 +11,7 @@ find_program(MAKEINFO_EXECUTABLE NAMES makeinfo)
 
 
 # check required programs are available.
-if ((MAGEEC_WITH_USER_DOCS OR MAGEEC_WITH_DESIGN_DOCS) AND
-    NOT MAKEINFO_EXECUTABLE)
+if (MAGEEC_WITH_DOC AND NOT MAKEINFO_EXECUTABLE)
   message(SEND_ERROR "makeinfo missing, cannot generate user or design documentation")
 endif ()
 

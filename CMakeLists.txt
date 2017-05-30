@@ -8,10 +8,8 @@ project(MAGEEC)
 # disable them as required.
 option (MAGEEC_DEBUG
         "Enable debug for MAGEEC" True)
-option (MAGEEC_WITH_USER_DOCS
+option (MAGEEC_WITH_DOC
         "Build MAGEEC user documentation" True)
-option (MAGEEC_WITH_DESIGN_DOCS
-        "Build MAGEEC with design documentation" True)
 option (MAGEEC_WITH_DOXYGEN
         "Generate MAGEEC API documentation with Doxygen" True)
 option (MAGEEC_WITH_GCC_FEATURE_EXTRACT_PLUGIN
@@ -130,7 +128,7 @@ install (DIRECTORY script/ DESTINATION bin PATTERN "*"
                      WORLD_READ WORLD_EXECUTE)
 
 # Documentation
-if (MAGEEC_WITH_USER_DOCS OR MAGEEC_WITH_DESIGN_DOCS OR MAGEEC_WITH_DOXYGEN)
+if (MAGEEC_WITH_DOC OR MAGEEC_WITH_DOXYGEN)
   add_subdirectory (doc)
 endif ()
 

@@ -1,3 +1,10 @@
+2017-05-30  Edward Jones  <ed.jones@embecosm.com>
+
+	* CMakeLists.txt: Update CMake config options, replace
+	MAGEEC_WITH_USER_DOCS and MAGEEC_WITH_DESIGN_DOCS with
+	just MAGEEC_WITH_DOC
+	* doc/CMakeLists.txt: Likewise.
+
 2017-05-03  Edward Jones  <ed.jones@embecosm.com>
 
 	* doc/Doxyfile.in: Update doxygen configuration to fix
