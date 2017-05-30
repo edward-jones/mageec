@@ -1,5 +1,5 @@
 \input texinfo
-@setfilename mageec-gcc-wrapper.info
+@setfilename mageec-gcc.info
 @afourpaper
 @settitle MAGEEC GCC Wrapper
 @paragraphindent 0
@@ -44,7 +44,7 @@ This document describes the MAGEEC GCC wrapper
 
 @section Overview
 
-The MAGEEC GCC wrapper aims to wrap around the gcc, gfortran
+The MAGEEC GCC wrapper wraps around the gcc, gfortran
 and g++ drivers in order to intercept and control the pass
 flag provided to the drivers using MAGEEC. The wrapper is
 used in a couple of ways. One way it is used is to record
@@ -52,14 +52,18 @@ information about program units as they are compiled, and
 the other ways is to update the optimization flags being used
 to compile programs units as they pass through the compiler.
 
-The wrapper is invoked instead of the original command, and
-after interacting with MAGEEC, and potentially making changes
-to the compilations flags, the original command is invoked to
+The wrapper is invoked instead of the original compile command,
+and after interacting with MAGEEC, and potentially making changes
+to the compilations flags, the original command is triggered to
 actually perform the compilation. In the process, the wrapper
 inserts information about the compilation of each program unit
 into the database, recording the features associated with
 the program unit as well as the parameters used to
 compile it.
+
+@center @image{"images/compiler-driver-gather", 6in}
+
+@center @image{"images/compiler-driver-predict", 6in}
 
 @section Design
 
@@ -105,29 +109,176 @@ has a similar format to those stored in the features file.
 The wrapper also takes the database as an argument, which
 is where compilations of each program unit are stored.
 
-@c @image Diagram of operation of the gcc wrapper during gather and optimize
-@c @image Diagram of the output format
-
 @section Usage
 
 There are two modes which the gcc wrapper can operate in; gather mode, and
-optimize mode. Gather mode, records the optimizations flags used to
-compile a program, whereas optimize mode strips the optimization
+predict mode. Gather mode records the optimizations flags used to
+compile a program, whereas predict mode strips the optimization
 flags and then produces new optimization flags after querying the
 machine learner to determine whether to enable or disable each
 flag in turn. The required flags varies depending on which mode
 it is running in.
 
-@c -fmageec-help
-@c -fmageec-version
-@c -fmageec-database-version
-@c -fmageec-framework-version
-@c -fmageec-debug
-@c -fmageec-sql-trace
-@c -fmageec-mode=
-@c -fmageec-database
-@c -fmageec-features
-@c -fmageec-out
+Required arguments:
+@itemize
+@item
+@b{-fmageec-mode}=@var{MODE} - Mode which the wrapper is running
+in. Valid values are @b{gather} and @b{predict}. @b{gather} mode
+is used to record the compilation as well as the flags used in
+the compilation. @b{predict} mode is used to predict a flag
+combination to use for optimization using a machine learner.
+
+@item
+@b{-fmageec-database}=@var{DATABASE}.db - Database holding the
+feature referenced in @var{FEATURES}.csv, as well as training
+data for machine learners used when in @b{predict} mode. This
+is also the database compilation records will be stored to.
+
+@item
+@b{-fmageec-features}=@var{FEATURES}.csv - csv file holding
+features for the input files which were previously extracted
+by a feature extractor
+
+@item
+@b{-fmageec-out}=@var{OUT_FILE}.csv - Output file which
+will hold the compilation ids. The compilation ids identify
+the records of compilations of each of the program units in
+the input files.
+@end itemize
+
+Arguments required only in predict mode:
+@itemize
+@item
+@b{-fmageec-ml}=@var{ML} - String identifier of the machine
+learner to use to predict flags for the compilation. This
+should have previously been trained and should have training
+data in @var{DATABASE}.db. This can also be a path to a
+shared object, if an external machine learner is used.
+
+@item
+@b{-fmageec-metric}=@var{METRIC} - String identifier of
+the metric to optimize for.
+@end itemize
+
+Optional arguments:
+@itemize
+@item
+@b{-fmageec-help} - Print help information about the wrapper
+
+@item
+@b{-fmageec-version} - Print the version of the wrapper
+
+@item
+@b{-fmageec-database-version} - Print the version of the
+provided database
+
+@item
+@b{-fmageec-framework-version} - Print the version of the
+MAGEEC framework
+
+@item
+@b{-fmageec-debug} - Enable debug output from the tool
+
+@item
+@b{-fmageec-sql-trace} - Print a trace of all SQL queries
+executed by the tool
+@end itemize
+
+In order to compile the files provided to the wrapper, the
+wrapper needs to be able to invoke the underlying compiler.
+There are various wrappers which are generated when the
+project is built, and each of these corresponds to different
+underlying compilers. In order to call the underlying compiler,
+the wrapper simply strips off the 'mageec-' prefix to
+find the underlying compiler command and then invokes that.
+
+@itemize
+@item mageec-gcc
+@item mageec-gfortran
+@item mageec-g++
+@item mageec-mpic++
+@item mageec-mpicc
+@item mageec-mpiCC
+@item mageec-mpicxx
+@item mageec-mpif77
+@item mageec-mpif90
+@item mageec-mpifort
+@end itemize
+
+If a wrapper is needed for another gcc based compiler, it is
+possible to simply copy (or symlink) the mageec-gcc command and
+rename it appropriately.
+
+@subsection Compilation output format
+
+When each file is handled by the wrapper, each program unit in
+the given file is matched with the features in the input feature
+file. These features are then associated with the parameters
+used to compile those features, and stored in the database. This
+entry in the database is identified by a compilation id, which
+is then output into a csv file. This csv file associates a
+set of features and the parameters it was compiled with with
+this unique compilation identifier.
+
+The format of the compilations csv file is as follows.
+
+@example
+@var{SRC_PATH},@var{PROGRAM_UNIT_TYPE},@var{PROGRAM_UNIT_ID},compilation,@var{COMPILATION_ID}
+@end example
+
+The role of each variable is as follows:
+
+@itemize
+@item
+@var{SRC_PATH} - The path to the source program. This identifies the
+source file which the features correspond to.
+
+@item
+@var{PROGRAM_UNIT_TYPE} - The type of program unit which the
+features are for. Currently used values are @b{module} and
+@b{function}.
+
+@item
+@var{PROGRAM_UNIT_ID} - A string identifier of the specific
+program unit in the file. The tuple consisting of @var{SRC_PATH},
+@var{PROGRAM_UNIT_TYPE} and @var{PROGRAM_UNIT_ID} is enough to
+unique identify the program unit which was compiled.
+
+@item
+@var{COMPILATION_ID} - A numerical identifier which uniqely
+identifies the compilation. In the database, this identifier
+is associated with the features associated with the program unit,
+and the parameters used in the compilation.
+@end itemize
+
+An example of potential output is as follows:
+
+@example
+/home/mageec/test/banana.c,module,banana.c,compilation,2815171
+/home/mageec/test/banana.c,function,potato,compilation,155777552
+...
+@end example
+
+@subsection Example usage
+
+@example
+mageec-gcc -fmageec-mode=gather
+           -fmageec-database=database.db
+           -fmageec-features=features.csv
+           -fmageec-out=compilations.csv
+           -fdce -fipa-sra -fno-tree-vectorize
+           -c foo.c bar.c
+@end example
+
+@example
+mageec-gcc -fmageec-mode=predict
+           -fmageec-database=database.db
+           -fmageec-features=features.csv
+           -fmageec-out=compilations.csv
+           -fmageec-ml=c50
+           -fmageec-metric=energy
+           -c foo.c bar.c
+@end example
 
 @node GNU Free Documentation License
 @chapter GNU Free Documentation License

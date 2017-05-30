@@ -113,14 +113,14 @@ Many arguments are optional, but some are required:
 Required arguments:
 @itemize
 @item
-@b{database} - This is the MAGEEC database which the extracted
-features will be added to
+@b{database} @var{DATABASE} - This is the MAGEEC database
+which the extracted features will be added to
 
 @item
-@b{out} - This is the output file which will store a mapping
-from each program unit to the identifier of the features
-for that program unit in the database. New entries are
-appended to the end of this file.
+@b{out} @var{OUT_FILE} - This is the output file which will
+store a mapping from each program unit to the identifier
+of the features for that program unit in the database.
+New entries are appended to the end of this file.
 @end itemize
 
 Optional arguments:
