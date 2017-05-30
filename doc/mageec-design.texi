@@ -113,7 +113,8 @@ compilers (which can only control the pass pipeline at a
 per-invocation level).
 
 @item
-Optimize for new metrics such as energy or compilation speed.
+Optimize for new metrics such as energy or compilation speed. Or
+features which are a function of multiple metrics.
 
 @item
 Provide a more powerful interface to control tradeoffs
@@ -156,13 +157,25 @@ MILEPOST: Much like the aim of MAGEEC, MILEPOST augmented
 a compiler with the ability to make optimization decisions
 based on statically derived features of an input program.
 
-@c TODO Fill in more info here
+MAGEEC tries to improve on MILEPOST by providing a more
+flexible framework to augment compilers with a machine
+learner, as well as also targeting energy as an
+optimization metric.
+
+Whereas the MILEPOST project used a custom version of GCC
+4.2, MAGEEC offers a way to interface with multiple
+compilers, including compilers which don't have a plugin
+interface. Equally, MAGEEC provides a way to interface
+with multiple machine learners whereas MILEPOST used a
+single machine learner technique called Predictive
+Search Distributions.
+
+@c TODO: More info, less combative tone
+@c citations for other authors work
 
 @item
-The MAGEEC project
-
-@c MAGEEC project
-@c citations for other authors work
+Other examples
+@c TODO: Other examples
 
 @end itemize
 
@@ -202,14 +215,14 @@ input source code, and the appropriate parameters to use in
 the compilation to build the executable. Like all machine
 learning processes, there is a training stage; where the
 machine learner is fed features and corresponding 'good'
-parameters to build up an association; and a optimizing stage;
+parameters to build up an association; and a prediction stage;
 where the machine learner is used with a new, previously
 unencountered program and used to select a set of parameters
 which are likely to produce a good quality output executable.
 
 @center @image{"images/high-level-gather", 6in}
 
-@center @image{"images/high-level-optimize", 6in}
+@center @image{"images/high-level-predict", 6in}
 
 @section Comparison with other compiler tuning approaches
 
@@ -301,7 +314,7 @@ to make using MAGEEC more straightforward for users.
 @section MAGEEC components
 
 @c @center @image{"gather-high-level", 6in}
-@c @center @image{"optimize-high-level", 6in}
+@c @center @image{"predict-high-level", 6in}
 
 MAGEEC itself is made up of a set of components and utilities which
 allow a compiler to be instrumented with the ability to predict
@@ -332,7 +345,7 @@ and a 1NN machine learner.
 
 @item
 Tools and scripts to access the file, and drive the training
-and optimization process.
+and prediction process.
 @end itemize
 
 @center @image{"images/high-level-components", 6in}
@@ -396,11 +409,11 @@ each function in that module.
 
 @subsection Compiler driver
 
-In order to drive the training and optimization process, there needs
+In order to drive the training and prediction process, there needs
 to be a mechanism to control the parameters provided to the compiler.
 When training, it needs to be possible to run the compiler under a
 number of controlled configurations, and record each of these
-compilations in the MAGEEC database for later use. During optimization
+compilations in the MAGEEC database for later use. During prediction
 it needs to be possible to call out to MAGEEC to make decisions using
 a trained machine learner and then use these decisions to control
 compilation parameters.
@@ -418,7 +431,7 @@ that compilation. Later, results will be associated with the
 compilation, and then there will be enough information to train
 a machine learner.
 
-For optimization, an interface is also offered which allows the driver
+For prediction, an interface is also offered which allows the driver
 to use a previously trained machine learner to make decisions about
 parameters. The driver can query a machine learner with a set of
 features as well as a parameter to make a decision about. It then
@@ -429,7 +442,7 @@ program unit.
 @subsection GCC wrapper driver
 
 MAGEEC offers one concrete interface to drive GCC for training and
-optimization purposes which takes the form of a wrapper around the
+prediction purposes which takes the form of a wrapper around the
 GCC frontend. This wraps around the gcc, gfortran and g++ drivers
 in order to intercept and control the optimization flags passed
 to those commands.
@@ -440,9 +453,9 @@ When training, the driver tracks the optimization flags being used
 with the driver and records a compilation in the database for each
 program unit.
 
-@center @image{"images/compiler-driver-optimize", 6in}
+@center @image{"images/compiler-driver-predict", 6in}
 
-When optimizing, the driver strips optimization flags and instead
+When predicting, the driver strips optimization flags and instead
 replaces the flags with flags derived through multiple calls out
 to the MAGEEC interface to the machine learner. It uses previously
 extracted features to inform this process.
@@ -542,7 +555,7 @@ is required to make a decision. This binary blob is returned by
 the machine learner and then stored by MAGEEC in the database for
 use later.
 
-When optimizing, the blob for the machine learner is retrieved
+When predicting, the blob for the machine learner is retrieved
 and an instance of the machine learner is instantiated. The
 user of the machine learner can then query the machine learner
 to make decisions about parameters which the machine learner
@@ -574,7 +587,7 @@ Currently, there is no ability to do incremental learning.
 
 @c Why not possible to do incremental learning
 
-@c @image Diagram of machine learner inputs and outputs for train + optimize
+@c @image Diagram of machine learner inputs and outputs for train + predict
 
 The machine learning interface is used by the standalone tool
 in order to train a database based on generated results, and
@@ -683,8 +696,8 @@ sequences in a compiler.
 @section Workflow
 
 There are two phases to using MAGEEC. Gathering and training a
-machine learner, and optimizing a program based on a trained
-machine learner.
+machine learner, and predict optimizations for a program based
+on a trained machine learner.
 
 @subsection Gathering and training
 
@@ -772,12 +785,12 @@ can be measures and the results gathered in MAGEEC. After
 results have been gathered, machine learners can be
 trained. Training involves invoking a machine learner with
 the results data in order to produce a blob of training
-data which can be stored to be used when optimizing at a
-later point.
+data which can be stored to be used when predicting optimizations
+at a later point.
 
-@subsection Optimizing
+@subsection Prediction
 
-In comparison to gathering and training, the optimizationg phase
+In comparison to gathering and training, the prediction phase
 is very straightfoward. Here a previously unseen program has its
 features extracted, and these features are passed to a machine
 learner by the compiler through MAGEEC. The features are
@@ -1093,7 +1106,7 @@ being run. The underlying version of GCC used was
 @c scripts
 
 There are two phases to the experiment; a training phase
-and a optimization phase. the steps in each of these phases
+and a prediction phase. the steps in each of these phases
 is as follows:
 
 @subsubsection Training phase
@@ -1111,7 +1124,7 @@ Add results to a number of databases
 
 @item
 Train the databases using the C5.0 machine learner. These
-databases will be used in the optimization phase.
+databases will be used in the prediction phase.
 @end itemize
 
 We now describe each of these steps in more detail.
@@ -1343,16 +1356,16 @@ only module (source file) level decisions are done.
 One the training is complete, the training blob
 is stored back in the database. This trained
 blob will be retrieved when the machine learner is
-used during the optimization phase.
+used during the prediction phase.
 
-@subsubsection Optimization phase
+@subsubsection Prediction phase
 
 After the various databases were trained, they were
-used to try and optimize two different sets of
-programs; a subset of the Mantevo benchmarks,
-including benchmarks included in the training set
-as well as benchmarks not previously seen; and
-previously unseen programs, which formed a test
+used to try and predict good optimizations for two
+different sets of programs; a subset of the Mantevo
+benchmarks, including benchmarks included in the
+training set as well as benchmarks not previously
+seen; and previously unseen programs, which formed a test
 of MAGEEC against real-world codes which need
 to be optimized.
 
@@ -1472,8 +1485,9 @@ blind tests of a new HPC code.
 @subsubsection Mantevo benchmark results
 
 Below is a table of the results derived from the Mantevo
-benchmarks, when optimizing using MAGEEC (through the GCC
-wrapper driver) along with the various trained databases.
+benchmarks, when predicting good optimizations using MAGEEC
+(through the GCC wrapper driver) along with the various
+trained databases.
 
 @center @image{"results-table", 6in}
 
@@ -1488,7 +1502,7 @@ the columns is as follows:
 @item Os - A run of the benchmark at Os
 
 @item All Flags - A run of the benchmark where all available
-optimization flags were turned
+optimization flags were enabled
 
 @item Combined Elimination (best) - The best run of the
 benchmark found in the combined elimination process.
