@@ -1,3 +1,9 @@
+2017-05-30  Edward Jones  <ed.jones@embecosm.com>
+
+	* Driver.cpp (DriverMode): Rename kOptimize to kPredict.
+	(main): Rename 'optimize' mode to 'predict' mode, use
+	DriverMode::kPredict instead of DriverMode::kOptimize.
+
 2017-05-03  Edward Jones  <ed.jones@embecosm.com>
 
 	* Driver.cpp: Update doxygen comments.

@@ -35,9 +35,9 @@ enum class DriverMode {
   kNone,
   /// Gather mode, record the flags used in the compilation to a database
   kGather,
-  /// Optimize mode, replace the flags with flags derived by sending queries
+  /// Predict mode, replace the flags with flags derived by sending queries
   /// about flags to the machine learners
-  kOptimize
+  kPredict
 };
 
 /// All of the flags which are enabled by GCC at -O0
@@ -1138,7 +1138,7 @@ static void printHelp() {
 "  -fmageec-debug              Enable debug output\n"
 "  -fmageec-sql-trace          Enable tracing of any SQL queries run\n"
 "  -fmageec-mode=<mode>        Mode of the driver, valid values are\n"
-"                              gather and optimize\n"
+"                              gather and predict\n"
 "  -fmageec-database=<file>    Database to record to\n"
 "  -fmageec-features=<file>    File containing feature group identifiers\n"
 "  -fmageec-out=<file>         File to output compilation ids into\n"
@@ -1212,8 +1212,8 @@ int main(int argc, const char *argv[]) {
 
       if (mode_str == "gather") {
         mode = DriverMode::kGather;
-      } else if (mode_str == "optimize") {
-        mode = DriverMode::kOptimize;
+      } else if (mode_str == "predict") {
+        mode = DriverMode::kPredict;
       } else {
         MAGEEC_ERR("Unknown mode: '" << mode_str << "'");
         return -1;
@@ -1261,25 +1261,25 @@ int main(int argc, const char *argv[]) {
 
   // Errors
   bool have_error = false;
-  if (mode == DriverMode::kOptimize) {
+  if (mode == DriverMode::kPredict) {
     if (!with_db) {
-      MAGEEC_ERR("Optimize mode specified without a database");
+      MAGEEC_ERR("Predict mode specified without a database");
       have_error = true;
     }
     if (!with_features) {
-      MAGEEC_ERR("Optimize mode specified without a features file");
+      MAGEEC_ERR("Predict mode specified without a features file");
       have_error = true;
     }
     if (!with_out) {
-      MAGEEC_ERR("Optimize mode specified without an output file");
+      MAGEEC_ERR("Predict mode specified without an output file");
       have_error = true;
     }
     if (!with_metric) {
-      MAGEEC_ERR("Optimize mode specified without any metric to optimize for");
+      MAGEEC_ERR("Predict mode specified without any metric to optimize for");
       have_error = true;
     }
     if (!with_ml) {
-      MAGEEC_ERR("Optimize mode specified without a machine learner to use");
+      MAGEEC_ERR("Predict mode specified without a machine learner to use");
       have_error = true;
     }
   } else if (mode == DriverMode::kGather) {
@@ -1401,7 +1401,7 @@ int main(int argc, const char *argv[]) {
   assert(cmd_args[0].compare(0, strlen("mageec-"), "mageec-") == 0);
   cmd_args[0] = cmd_args[0].substr(strlen("mageec-"));
 
-  // If we are not in 'gather' or 'optimize' modes, or if we're not compiling
+  // If we are not in 'gather' or 'predict' modes, or if we're not compiling
   // to an object file, then just run the original command
   if (!to_obj || (mode == DriverMode::kNone)) {
     std::stringstream command;
@@ -1483,7 +1483,7 @@ int main(int argc, const char *argv[]) {
   cmd_args = new_cmd_args;
 
   // Load the database
-  assert((mode == DriverMode::kOptimize) || (mode == DriverMode::kGather));
+  assert((mode == DriverMode::kPredict) || (mode == DriverMode::kGather));
   std::unique_ptr<mageec::Database> db = framework.getDatabase(db_str, false);
   if (!db) {
     MAGEEC_ERR("Error retrieving database. The database may not exists, or "
@@ -1598,9 +1598,9 @@ int main(int argc, const char *argv[]) {
       src_file_parameter_set_ids[src_file_path] = param_set_id;
     }
   } else {
-    // When in 'optimize' mode, the parameters used for each file are based on
-    // flags generated from the features
-    assert(mode == DriverMode::kOptimize);
+    // When in 'predict' mode, the parameters used for each file are based on
+    // flags predicted by the machine learner using the features
+    assert(mode == DriverMode::kPredict);
 
     // Find the selected machine learner trained for the specified metric
     auto trained_mls = db->getTrainedMachineLearners();
@@ -1727,8 +1727,8 @@ int main(int argc, const char *argv[]) {
     file_cmd.push_back(*cmd_iter);
     ++cmd_iter;
 
-    // In both 'gather' and 'optimize' -O3 is used as a base set of flags.
-    // This gives us a common configuration for both gather and optimizing, and
+    // In both 'gather' and 'predict' -O3 is used as a base set of flags.
+    // This gives us a common configuration for both gather and prediction, and
     // by running at -O3 we are also able to toggle the whole range of
     // optimizations passes
     file_cmd.push_back("-O3");
