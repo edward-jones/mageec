@@ -36,6 +36,7 @@ This document describes the MAGEEC Feature Extraction plugin.
 
 @menu
 * MAGEEC GCC Feature Extractor::
+* Glossary::
 * GNU Free Documentation License::
 @end menu
 
@@ -48,6 +49,8 @@ The MAGEEC feature extractor plugin is a plugin to perform
 extraction of static features from C, C++ and Fortran source code
 by using GCC. It is an open source plugin which extracts the
 features from the GCC internal gimple representation.
+
+@center @image{"images/feature-extractor", 6in}
 
 @section Design
 
@@ -82,14 +85,16 @@ cannot understand.
 
 @section Features
 
-Below is a list of the function features and module
-features which are extracted by the feature extractor.
-Each of these is assigned a unique identifier.
-The module features are primarily derived from the
-function features using a number of reduction functions,
-including max/min/mean/range.
+A list of the function features and module features
+extracted by the feature extractor can be found in
+the glossary.
 
-@c List of all of the features
+@xref{GCC plugin features}
+
+Each feature is assigned a unique identifier. Module
+features are primarily derived from the function
+features using a number of reduction functions,
+including the maximum, minimum, mean, median and range.
 
 @section Usage
 
@@ -98,21 +103,23 @@ installation of MAGEEC. It is used by providing the
 feature extractor library as a plugin to the gcc, g++ or
 gfortran drivers through the -fplugin option.
 
+@example
 gcc -fplugin=libgcc_feature_extract.so
+@end example
 
 Arguments are provided to the plugin through
--fplugin-arg-libgcc_feature_extract-<arg_name>
+-fplugin-arg-libgcc_feature_extract-@var{arg_name}
 
 Many arguments are optional, but some are required:
 
 Required arguments:
 @itemize
 @item
-database - This is the MAGEEC database which the extracted
+@b{database} - This is the MAGEEC database which the extracted
 features will be added to
 
 @item
-out - This is the output file which will store a mapping
+@b{out} - This is the output file which will store a mapping
 from each program unit to the identifier of the features
 for that program unit in the database. New entries are
 appended to the end of this file.
@@ -121,31 +128,83 @@ appended to the end of this file.
 Optional arguments:
 @itemize
 @item
-plugin-info - Print information about the plugin.
+@b{plugin-info} - Print information about the plugin.
 
 @item
-version - Print the version of the plugin.
+@b{version} - Print the version of the plugin.
 
 @item
-framework-version - Print the version of MAGEEC which this
+@b{framework-version} - Print the version of MAGEEC which this
 plugin was built against.
 
 @item
-database-version - Print the version of the database
+@b{database-version} - Print the version of the database
 provided.
 
 @item
-debug - Enable debug output
+@b{debug} - Enable debug output
 
 @item
-sql-trace - Enable a trace of all SQL queries executed
+@b{sql-trace} - Enable a trace of all SQL queries executed
 @end itemize
 
-For build systems like autoconf and CMake it is necessary
-to inject these flags into the build. This can often
-be achieved by setting the CFLAGS and CXXFLAGS environment
-variables or through the -DCMAKE_C_FLAGS and -DCMAKE_CXX_FLAGS
-arguments during the configure stage.
+When using this plugin to build projects which use autoconf
+and CMake build systems it is necessary to inject these flags
+into the build. This can often be achieved by setting the CFLAGS
+and CXXFLAGS environment variables, or through the
+@i{-DCMAKE_C_FLAGS} and @i{-DCMAKE_CXX_FLAGS} arguments when
+running CMake.
+
+@subsection Feature output format
+
+When the feature extractor is run, it extracts features for
+each program unit and places them into the output file. The
+output file is a csv file where each entry has the following
+format:
+
+@example
+@var{SRC_PATH},@var{PROGRAM_UNIT_TYPE},@var{PROGRAM_UNIT_ID},features,@var{FEATURE_SET_ID},feature_class,@var{FEATURE_CLASS_ID}
+@end example
+
+The role of each variable is as follows:
+
+@itemize
+@item
+@var{SRC_PATH} - The path to the source program. This identifies the
+source file which the features correspond to.
+
+@item
+@var{PROGRAM_UNIT_TYPE} - The type of program unit which the
+features are for. Currently used values are @b{module} and
+@b{function}.
+
+@item
+@var{PROGRAM_UNIT_ID} - A string identifier of the specific
+program unit in the file. The tuple consisting of @var{SRC_PATH},
+@var{PROGRAM_UNIT_TYPE} and @var{PROGRAM_UNIT_ID} is enough to
+unique identify the program unit which the feature set corresponds
+to.
+
+@item
+@var{FEATURE_SET_ID} - A numerical identifier which identifies
+the set of extracted features in the MAGEEC database file.
+
+@item
+@var{FEATURE_CLASS_ID} - A numerical identifier for the 'class'
+of features which the feature set belongs to. When features
+are used to train a machine learner, each 'class' of features is
+trained seperately. This identifier is generally used to
+seperate function and module features, so that they are handled
+independently by the machine learner.
+@end itemize
+
+An example of potential output is as follows:
+
+@example
+/home/mageec/test/banana.c,module,banana.c,features,82671682,feature_class,0
+/home/mageec/test/banana.c,function,potato,features,19992772,feature_class,1
+...
+@end example
 
 @subsection Usage notes
 
@@ -166,6 +225,24 @@ gcc -fplugin=/path/to/libgcc_feature_extract.so
 cmake -DCMAKE_C_FLAGS="-fplugin=/path/to/libgcc_feature_extract.so
       -fplugin-arg-libgcc_feature_extract-database=my_database.db
       -fplugin-arg-out=features.csv"
+
+@node Glossary
+@chapter Glossary
+
+@menu
+* GCC plugin features::
+@end menu
+
+@node GCC plugin features
+@section GCC plugin features
+
+@subsection Function features
+
+@include function-features.texi
+
+@subsection Module features
+
+@include module-features.texi
 
 @node GNU Free Documentation License
 @chapter GNU Free Documentation License

@@ -1,0 +1,127 @@
+@multitable @columnfractions 1
+@headitem Feature name @c @tab Description
+@item Argument count @c @tab Number of arguments to the function
+@c @item Cyclomatic Complexity @c @tab Cyclomatic complexity of the function
+@item CFG edges @c @tab Number of control flow graph edges
+@item Abnormal CFG edges @c @tab Number of abnormal control flow graph edges
+@c @item Critical Path Length @c @tab Length of the critical path through the function
+@c
+@c loops
+@item Loop count @c @tab Number of loops in the function
+@item Min loop depth @c @tab Minimum depth of loop in the function
+@item Max loop depth @c @tab Maximum loop depth in the function
+@item Loop depth range @c @tab Difference between the max and minimum loop lengths
+@item Mean loop repth @c @tab Average depth of loops in the function
+@item Median loop depth @c @tab Median depth of loops in the function
+@item Loops of depth 1 @c @tab Count of loops of depth 1
+@item Loops of depth 2 @c @tab Count of loops of depth 2
+@item Loops of depth >2 @c @tab Count of loops of depth >2
+@c
+@c basic blocks
+@item Basic block count @c @tab Count of basic blocks in the function
+@item Basic blocks in loop @c @tab Number of basic blocks in the function inside a loop
+@item Basic blocks outside loop @c @tab Number of basic blocks in the function outside a loop
+@item Max basic block successors @c @tab Maximum number of successors for any basic block
+@item Min basic block successors @c @tab Minimum number of successors for a basic block
+@item Basic block successors range @c @tab Different between the maximum and minimum number of successors in a basic block
+@item Mean basic block successor count @c @tab Average number of successors for a basic block
+@item Median basic block successor count @c @tab Median number of successors for a basic block
+@item Max basic block predecessors @c @tab Maximum number of predecessors for any basic block
+@item Min basic block predecessors @c @tab Minimum number of predecessors for a basic block
+@item Basic block predecessors range @c @tab Different between the maximum and minimum number of predecessors in a basic block
+@item Mean basic block predecessors count @c @tab Average number of predecessors for a basic block
+@item Median basic block predecessors count @c @tab Median number of predecessors for a basic block
+@item Basic blocks with 1 predecessor @c @tab Count of basic blocks with 1 predecessor
+@item Basic blocks with 2 predecessors @c @tab Count of basic blocks with 2 predecessors
+@item Basic blocks with >2 predecessors @c @tab Count of basic blocks with >2 predecessors
+@item Basic blocks with 1 successor @c @tab Count of basic blocks with 1 successor
+@item Basic blocks with 2 successors @c @tab Count of basic blocks with 2 successors
+@item Basic blocks with >2 successors @c @tab Count of basic blocks with >2 successors
+@item Basic blocks with 1 predecessor, 1 successor @c @tab Count of basic blocks with 1 predecessor and 1 successor
+@item Basic blocks with 1 predecessor, 2 successors @c @tab Count of basic blocks with 1 predecessor and 2 successors
+@item Basic blocks with 2 predecessors, 1 successor @c @tab Count of basic blocks with 2 predecessors and 1 successor
+@item Basic blocks with 2 predecessors, 2 successors @c @tab Count of basic blocks with 2 predecessors and 2 successors
+@item Basic blocks with >2 predecessors, >2 successors @c @tab Count of basic blocks with >2 predecessors and >2 successors
+@c
+@c instruction counts
+@item Instruction count @c @tab Total number of instructions in the function
+@item Max instruction count @c @tab Max number of instructions in a basic block
+@item Mean instruction count @c @tab Average number of instructions in basic blocks
+@item Median instruction count @c @tab Median instructions in basic blocks
+@c
+@item Conditional statement count @c @tab Total number of conditional statements in the function
+@item Max conditional statement count @c @tab Max number of conditional statements in a basic block
+@item Mean conditional statement count @c @tab Average number of conditional statements in a basic block
+@item Median conditional statement count @c @tab Median number of conditional statements in a basic block
+@c
+@item Direct call count @c @tab Total number of direct calls in the function
+@item Max direct call count @c @tab Max number of direct calls in a basic block
+@item Mean direct call count @c @tab Average number of direct calls in a basic block
+@item Median direct call count @c @tab Median number of direct calls in a basic block
+@c
+@item Indirect call count @c @tab Total number of indirect calls in the function
+@item Max indirect call count @c @tab Max number of indirect calls in a basic block
+@item Mean indirect call count @c @tab Average number of indirect calls in a basic block
+@item Median indirect call count @c @tab Median number of indirect calls in a basic block
+@c
+@item Integer operations count @c @tab Total number of integer operations in the function
+@item Max integer operations count @c @tab Max number of integer operations in a basic block
+@item Mean integer operations count @c @tab Average number of integer operations in a basic block
+@item Median integer operations count @c @tab Median number of integer operations in a basic block
+@c
+@item Floating point operations count @c @tab Total number of floating point operations in the function
+@item Max floating point operations count @c @tab Max number of floating point operations in a basic block
+@item Mean floating point operations count @c @tab Average number of floating point operations in a basic block
+@item Median floating point operations count @c @tab Median number of floating point operations in a basic block
+@c
+@item Unary operations count @c @tab Total number of unary operations in the function
+@item Max unary operations count @c @tab Max number of unary operations in a basic block
+@item Mean unary operations count @c @tab Average number of unary operations in a basic block
+@item Median unary operations count @c @tab Median number of unary operations in a basic block
+@c
+@item Pointer arithmetic operations count @c @tab Total number of pointer arithmetic operations in the function
+@item Max pointer arithmetic operations count @c @tab Max number of pointer arithmetic operations in a basic block
+@item Mean pointer arithmetic operations count @c @tab Average number of pointer arithmetic operations in a basic block
+@item Median pointer arithmetic operations count @c @tab Median number of pointer arithmetic operations in a basic block
+@c
+@item Unconditional branches count @c @tab Total number of unconditional branches in the function
+@item Max unconditional branches count @c @tab Max number of unconditional branches in a basic block
+@item Mean unconditional branches count @c @tab Average number of unconditional branches in a basic block
+@item Median unconditional branches count @c @tab Median number of unconditional branches in a basic block
+@c
+@item Assign operations count @c @tab Total number of assignment operations in the function
+@item Max assign operations count @c @tab Max number of assignment operations in a basic block
+@item Mean assign operations count @c @tab Average number of assignment operations in a basic block
+@item Median assign operations count @c @tab Median number of assignment operations in a basic block
+@c
+@item Switch statements count @c @tab Total number of switch statements in the function
+@item Max switch statements count @c @tab Max number of switch statements in a basic block
+@item Mean switch statements count @c @tab Average number of switch statements in a basic block
+@item Median switch statements count @c @tab Median number of switch statements in a basic block
+@c
+@item Phi nodes count @c @tab Total number of phi nodes in the function
+@item Max phi nodes count @c @tab Max number of phi nodes in a basic block
+@item Mean phi nodes count @c @tab Average number of phi nodes in a basic block
+@item Median phi nodes count @c @tab Median number of phi nodes in a basic block
+@item Phi header nodes count @c @tab Total number of phi header nodes in the function
+@item Max phi header nodes count @c @tab Max number of phi header nodes in a basic block
+@item Mean phi header nodes count @c @tab Average number of phi header nodes in a basic block
+@item Median phi header nodes count @c @tab Median number of phi header nodes in a basic block
+@item Max arguments to phi nodes @c @tab Max number of arguments to a phi node
+@item Mean arguments to phi nodes @c @tab Average number of arguments to phi nodes
+@item Medium arguments to phi nodes @c @tab Median number of arguments to phi nodes
+@item Phi node arguments count between 1 and 5 @c @tab Number of phi nodes with between 1 and 5 arguments
+@item Phi nodes with >5 arguments @c @tab Number of phi nodes with >5 arguments
+@c
+@item Max arguments to call instructions @c @tab Max number of arguments to a call instruction
+@item Mean arguments to call instructions @c @tab Average number of arguments to call instructions
+@item Medium arguments to call instructions @c @tab Medium number of arguments to call instructions
+@item Calls with 0 arguments count @c @tab Number of calls taking no arguments
+@item Calls with >=1 and <=3 arguments @c @tab Number of calls with between 1 and 3 arguments
+@item Calls with >3 arguments @c @tab Number of calls with >3 arguments
+@item Max pointer arguments to calls @c @tab Maximum number of pointer arguments to call instructions
+@item Mean pointer arguments to calls @c @tab Average number of pointer arguments to call instructions
+@item Median pointer arguments to calls @c @tab Median number of pointer arguments to call instructions
+@item Number of calls returning integers @c @tab Number of call instructions returning integers
+@item Number of calls returning floating point @c @tab Number of call instructions returning floating point values
+@end multitable
