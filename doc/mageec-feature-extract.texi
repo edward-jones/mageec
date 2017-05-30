@@ -80,8 +80,6 @@ no point in extracting features which a machine learner
 cannot understand.
 
 @c @image Picture of integration with pass pipeline
-@c @image Picture of the integration with MAGEEC
-@c @image Picture of the output file format
 
 @section Features
 
@@ -217,14 +215,18 @@ entries.
 
 @subsection Example usage
 
+@example
 gcc -fplugin=/path/to/libgcc_feature_extract.so
     -fplugin-arg-libgcc_feature_extract-database=my_database.db
     -fplugin-arg-out=features.csv
     foo.c bar.c -o a.out
+@end example
 
+@example
 cmake -DCMAKE_C_FLAGS="-fplugin=/path/to/libgcc_feature_extract.so
       -fplugin-arg-libgcc_feature_extract-database=my_database.db
       -fplugin-arg-out=features.csv"
+@end example
 
 @node Glossary
 @chapter Glossary

@@ -75,23 +75,23 @@ are as follows:
 
 @itemize
 @item
---create - Create a new empty database.
+@b{--create} - Create a new empty database.
 
 @item
---append <database> - Append another database to the current
+@b{--append} @var{DATABASE} - Append another database to the current
 database. The following argument is the database to be appended
 
 @item
---train - Train the database using the stored training data,
+@b{--train} - Train the database using the stored training data,
 using one or more machine learners and targetting one or
 more metrics.
 
 @item 
---garbage-collect - Remove any entries in the database which
+@b{--garbage-collect} - Remove any entries in the database which
 are not referenced by any result.
 
 @item
---add-results <results>.csv - Add results to the database
+@b{--add-results} @var{RESULTS}.csv - Add results to the database
 from a results csv file provided in the following argument.
 @end itemize
 
@@ -100,7 +100,7 @@ There are some arguments which are required when using the
 
 @itemize
 @item
---metric <value> - Required in --train mode. Specifies
+@b{--metric} @var{VALUE} - Required in --train mode. Specifies
 which metrics the database should be trained for. The
 value provided in the following argument corresponds to
 the 'metric' field of the results which were added to the
@@ -108,7 +108,7 @@ database, and is an arbitrary string identifier. Multiple
 --metric arguments may be provided.
 
 @item
---ml <value> - Required in --train mode. Specifies which
+@b{--ml} @var{VALUE} - Required in --train mode. Specifies which
 machine learner interfaces should be trained. This argument
 may be a string identifier of a builtin machine learner, or
 it may be a shared object for a machine learner plugin
@@ -121,28 +121,28 @@ provided in any mode:
 
 @itemize
 @item
---help - Print out help for the tool.
+@b{--help} - Print out help for the tool.
 
 @item
---version - Print the version of MAGEEC.
+@b{--version} - Print the version of MAGEEC.
 
 @item
---debug - Enable debug output from the tool.
+@b{--debug} - Enable debug output from the tool.
 
 @item
---database-version - Print the version of the database
+@b{--database-version} - Print the version of the database
 being used. Ignore if no database is provided.
 
 @item
---sql-trace - Print a trace of all SQL queries executed by
+@b{--sql-trace} - Print a trace of all SQL queries executed by
 the tool.
 
 @item
---print-ml-interfaces - Print all of the interfaces available
+@b{--print-ml-interfaces} - Print all of the interfaces available
 to the framework.
 
 @item
---print-mls - Print all of the machine learners in the
+@b{--print-mls} - Print all of the machine learners in the
 database.
 @end itemize
 
@@ -178,29 +178,86 @@ trained for. When results are added to the database, each
 result has an associated string identifier which describes
 what quality of the program the result is measuring.
 
-@subsection Adding results
+@subsection Results input format
 
 Results are added to the database through the '--add-results'
-argument. This argument takes a path to a file of the following
-format:
+argument. This argument takes a path to a csv files which
+has the following format:
 
-@c results file format
+@example
+@var{SRC_PATH},@var{PROGRAM_UNIT_TYPE},@var{PROGRAM_UNIT_ID},result,@var{COMPILATION_ID},@var{METRIC},@var{VALUE}
+@end example
+
+The role of each variable is as follows:
+
+@itemize
+@item
+@var{SRC_PATH} - The path to the source program. This identifies the
+source file which the features correspond to.
+
+@item
+@var{PROGRAM_UNIT_TYPE} - The type of program unit which the
+features are for. Currently used values are @b{module} and
+@b{function}.
+
+@item
+@var{PROGRAM_UNIT_ID} - A string identifier of the specific
+program unit in the file. The tuple consisting of @var{SRC_PATH},
+@var{PROGRAM_UNIT_TYPE} and @var{PROGRAM_UNIT_ID} is enough to
+unique identify the program unit which the feature set corresponds
+to.
+
+@item
+@var{COMPILATION_ID} - A numerical identifier which identifies
+the compilation this result should be associated with in the
+database file.
+
+@item
+@var{METRIC} - String identifier for the metric which the
+result is for. Common metrics are @b{energy}, @b{time} and
+@b{size}, however any string value may be used.
+
+@item
+@var{VALUE} - Decimal value of the result.
+@end itemize
+
+An example of a potential results input file is as follows:
+
+@example
+/home/mageec/test/banana.c,module,banana.c,result,15826111,energy,19267.0
+/home/mageec/test/banana.c,function,potato,result,93735000,energy,2745.0
+...
+@end example
 
 @section Example usage
 
+@example
 mageec --help
+@end example
 
+@example
 mageec --version
+@end example
 
+@example
 mageec --print-ml-interfaces --ml my-ml-plugin.so
+@end example
 
+@example
 mageec database.db --create
+@end example
 
+@example
 mageec database.db --garbage-collect
+@end example
 
+@example
 mageec database.db --append other-database.db --debug
+@end example
 
+@example
 mageec database.db --train --ml c50 --ml 1nn --metric energy --debug
+@end example
 
 @node GNU Free Documentation License
 @chapter GNU Free Documentation License
