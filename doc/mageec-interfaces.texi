@@ -75,6 +75,8 @@ can be generated when building MAGEEC. The doxygen
 documentation provides a more precise definition of the
 interface to MAGEEC.
 
+@center @image{"images/high-level-components", 6in}
+
 @section Design
 
 ML.h - Describes the training and decision making interface.
@@ -145,6 +147,13 @@ of the set of parameters which make up a compilation, a
 set of features which define the program unit which was
 compile, and a floating point value which defines the
 'quality' of the result.
+
+@section Usage
+
+Using the MAGEEC library is as simple as including the
+MAGEEC headers, and linking against libmageec. Both
+the headers and the library are installed as a standard
+part of building MAGEEC.
 
 @node GNU Free Documentation License
 @chapter GNU Free Documentation License
