@@ -1616,6 +1616,10 @@ signifying no data was derived at that point.
 @node Glossary
 @chapter Glossary
 
+@menu
+* GCC plugin features::
+@end menu
+
 @node GCC plugin features
 @section GCC plugin features
 
