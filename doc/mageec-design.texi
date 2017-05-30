@@ -134,7 +134,7 @@ contemporary compilers, however many only appear in research.
 
 @itemize
 @item
-Profile-guided optimization: This is common in many open source
+@b{Profile-guided Optimization} - This is common in many open source
 and propreitary compilers now. Optimization is tuned based on
 profiling data from running the program with representative
 data. The profile provides information about the hot-spots in
@@ -153,7 +153,7 @@ frequently of usage of functions and basic blocks. Nevertheless
 it is a very valueable technique.
 
 @item
-MILEPOST: Much like the aim of MAGEEC, MILEPOST augmented
+@b{MILEPOST} - Much like the aim of MAGEEC, MILEPOST augmented
 a compiler with the ability to make optimization decisions
 based on statically derived features of an input program.
 
@@ -174,33 +174,32 @@ Search Distributions.
 @c citations for other authors work
 
 @item
-Other examples
+@b{Other Examples}
 @c TODO: Other examples
-
 @end itemize
 
 @section Terminology
 
 @itemize
 @item
-Program Unit - A contiguous part of a program which can be uniquely
+@b{Program Unit} - A contiguous part of a program which can be uniquely
 identifier in both the original source code and the final executable.
 Examples are modules, functions and possibly loops and basic blocks.
 
 @item
-Feature - A measurable and quantifiable aspect of a program unit, which
+@b{Feature} - A measurable and quantifiable aspect of a program unit, which
 represents an aspect of the program unit in some way. For example,
 the number of instructions in a basic block.
 
 @item
-Parameter - A value which can be controlled by some mechanism in the
+@b{Parameter} - A value which can be controlled by some mechanism in the
 compiler to affect the decree or nature of optimization, with the
 effect of changing the object code produced by the program. For example:
 a flag indicating whether the 'dead code elimination' pass should be
 executed.
 
 @item
-Compiler configuration - A set of parameters used to compile an
+@b{Compiler configuration} - A set of parameters used to compile an
 individual program unit. Multiple units of the same program may
 use the same configuration of the compiler.
 @end itemize
@@ -233,7 +232,7 @@ approaches which can be used for compiler tuning. One approach
 is to predict compiler parameters based on dynamic features
 instead of static features, and the other approach is to
 iteratively compile a program refining the set of compilation
-parameters after each build. Compared to our approaches,
+parameters after each build. Compared to other approaches,
 our approach has some advantages and disadvantages:
 
 Advantages:
@@ -258,12 +257,21 @@ source code or intermediate representation. This makes deployment
 far easier.
 
 @item
-In some cases it may not be able to instrument and measure dynamic
+In some cases it may not be possible to instrument and measure dynamic
 features. For example, an embedded system may not have enough memory
-for the overhead of instrumentation, or it may not be possible to
-measure some features on an embedded systems
+or storage for the overhead of intrumentation.
 
-@c Example (limitations in debug interface)
+@item
+Instrumentation of the program in order to measure dynamic features
+of the program can affect the behavior of the program, and can
+affecting the measurement of those features. Static features do not
+alter the program under measurement in any way.
+
+@item
+If dynamic features are measured, then and large amount of
+representative input needs to be used in order to accurately
+quantify the behavior of the program. Producing this data may
+be a non-trivial task itself.
 @end itemize
 
 Disadvantages:
@@ -278,12 +286,14 @@ as the features of the program will often hint at the type and patterns
 of data usage, however the problem cannot be fully mitigated.
 
 @item
-Static features are less representative of the input program. This
-relates to the previous point. Dynamic features are likely to be
-more representative of the input program than static features. This
-means that static features are likely to be far less effective than
-using dynamic features. It also means more training data is likely
-to be needed.
+Static features may be less representative of the program's behavior.
+For example a program may contain a lot of code which is only executed in
+exceptional circumstances. If dynamic features or interative
+compilation is used, then these cold code paths may never be exercised,
+and therefore won't be reflected in the features. If static features
+are used, then these cold paths will contribute as much to the
+features as hot code, even though they are almost irrelevant to the
+performance of the program.
 @end itemize
 
 @section MAGEEC features
@@ -304,12 +314,12 @@ MAGEEC is open source under the GPL license. The aim is that by doing
 this MAGEEC can be freely implemented in as wide range of compilers as
 possible.
 
-@section Comparison with original MAGEEC project
-
-The original MAGEEC project aimed at optimizing energy consumption
-on embedded systems. The aim of this updated was to additionally
-target high performance applications as well as improve the workflow
-to make using MAGEEC more straightforward for users.
+@c @section Comparison with original MAGEEC project
+@c
+@c The original MAGEEC project aimed at optimizing energy consumption
+@c on embedded systems. The aim of this updated was to additionally
+@c target high performance applications as well as improve the workflow
+@c to make using MAGEEC more straightforward for users.
 
 @section MAGEEC components
 
@@ -323,29 +333,30 @@ The components in MAGEEC include:
 
 @itemize
 @item
-An interface to derive static features from an input program, as
-well as an implementation of a feature extractor for GCC.
+@b{Feature Extractor} - An interface to derive static features
+from an input program, as well as an implementation of a feature
+extractor for GCC.
 
 @item
-A mechanism to drive a compiler to exercise various parameters
-during the compilation phase. Currently this is implemented for
-GCC as wrapper around the GCC frontend which can alter
-optimization flags on a module-by-module basis.
+@b{Compiler driver} - A mechanism to drive a compiler to exercise
+various parameters during the compilation phase. Currently this is
+implemented for GCC as wrapper around the GCC frontend which can
+alter optimization flags on a module-by-module basis.
 
 @item
-A file format to record features, compilations and results
-for programs units in a centralized place. This is implemented
-through an SQLite3 database.
+@b{File Format} - A file format to record features, compilations
+and results for programs units in a centralized place. This is
+implemented through an SQLite3 database.
 
 @item
-An interface which can be implemented by machine learners to
-be used with the framework. In addition to this, basic
-machine learners are provided in the form of the C5.0 classifier
-and a 1NN machine learner.
+@b{Machine Learner Interface} - An interface which can be
+implemented by machine learners to be used with the framework.
+In addition to this, basic machine learners are provided in the
+form of the C5.0 classifier and a 1NN machine learner.
 
 @item
-Tools and scripts to access the file, and drive the training
-and prediction process.
+@b{Tooling} - Tools and scripts to access the file, and drive
+the training and prediction process.
 @end itemize
 
 @center @image{"images/high-level-components", 6in}
@@ -396,8 +407,8 @@ The benefit of the GCC feature extractor is that it allows feature
 extraction to be performed on C, C++ and Fortran code without
 requiring a compiler-specific feature extractor to be written.
 Provided code can be built with GCC, feature extraction can be
-achieved. This makes it ideal for instrumenting proprietary
-compilers.
+achieved. This makes it ideal for use when using a proprietary
+compiler which cannot perform feature extraction itself.
 
 The feature extractor extracts different sets of features
 depending on whether a function or a module is the program unit
@@ -492,8 +503,8 @@ a compilation is recorded in the database an an identifier to it
 is returned. This compilation can then have a result value associated
 with it later.
 
-There are a few reasons for using an SQLite database as an
-intermediate format:
+There are some benefits to using an SQLite database as a
+storage format:
 
 @itemize
 @item
@@ -502,19 +513,13 @@ to using a database. By using a database, these relations can be
 maintained and enforced.
 
 @item
-The database is a familiar conceptual model which is easy to
-understand.
-
-@item
 sqlitebrowser can be used to query the database manually, making
 it easier to debug and manually fix if it is ever necessary.
 
 @item
 SQLite allows multiple processes to read/write the same file,
 which is useful for parallelizing the training process for
-performance. Doing this with flat files would be more complex,
-and require reimplementing functionality already offered by
-SQLite.
+performance
 
 @item
 SQLite is high performance, and offers resilience against
@@ -522,8 +527,7 @@ data corruption out of the box.
 @end itemize
 
 The main disadvantage to using SQLite is that it adds some
-complexity to the interfaces, and requires more boilerplate code
-to interface than a simpler flat file would.
+complexity to the interfaces.
 
 @subsubsection Database structure
 
