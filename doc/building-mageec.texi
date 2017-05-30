@@ -45,55 +45,52 @@ Efficient Compilation}.
 
 @section Prerequesites
 
-There are a number of prerequesites that are needed to build all
-of the components of MAGEEC. There are several components which
-are built and installed as part of MAGEEC; the MAGEEC core library,
-GCC plugin, GCC wrapper, C5.0 and 1NN machine learners,
-documentation and scripts. These components have various
-prerequesites.
+There are several components which are built and installed
+as part of MAGEEC; the MAGEEC core library, GCC feature extractor
+plugin, GCC driver wrapper, C5.0 and 1NN machine learners,
+documentation and scripts. These components have a number
+of prerequuesites which are required to build everything in
+MAGEEC.
 
-The two main prerequesites are:
+The main dependencies required to build the MAGEEC components
+are:
+
 @itemize
 @item
-CMake - To build the build files
+CMake - Used as the build system to build MAGEEC. A version >= 3.0.2
+is required.
 
 @item
-GCC/Clang - To build the libraries a C++11 compiler is necessary
+make or ninja - CMake can generate Makefiles or files to build
+using the Ninja build system.
+
+@item
+GCC/Clang - To build the libraries a version of GCC/Clang supporting
+C++11 is required. It may be possible to use other compilers, but
+GCC and Clang are the only compilers supported by the build system.
 
 @item
 SQLite3 - MAGEEC uses sqlite as a file format, so sqlite is
-required, along with the development headers.
+required along with its development headers.
 
-@end itemize
-
-A couple of the components have additional dependencies:
-
-@subsection MAGEEC gcc plugin dependencies
-
-@itemize
 @item
-GCC plugin development headers - These headers are provided in a 
-development package for GCC. The headers define the plugin interface
-to GCC. Any version of 4.5.0 includes the plugin headers.
-@end itemize
+GCC plugin development headers - These headers are the headers
+which define the plugin interface which will be used by the 
+MAGEEC GCC feature extractor plugin, and are required when
+building the feature extractor. Only versions of GCC >= 4.5.0
+have plugin headers available, so the MAGEEC feature extractor
+plugin can only be built and used with these GCC versions.
 
-
-@subsection MAGEEC doxygen dependencies
-
-@itemize
 @item
-Doxygen - The MAGEEC C++ source code is annotated with Doxygen
-comments. Doxygen is required to build API documentation.
-@end itemize
+Doxygen - This dependency is optional, and is only required
+if API documentation is also being generated. The MAGEEC C++
+source code is annotated with Doxygen comments which can be
+used to generate source documentation if Doxygen is available.
 
-@subsection MAGEEC user documentation dependencies
-
-@itemize
 @item
-Texinfo - This is required in order to build all of the user
-documentation
+Texinfo - This dependency is optional and is only needed if
+user documentation is desired.
 
-@c other packages for pdf/html documentation?
 @end itemize
 
 @section Building MAGEEC
@@ -115,33 +112,36 @@ make install
 @subsection Build options
 
 There are some options that can be provided to CMake to configure
-the build using the -D flag. By default all of these options
-are enabled.
+the build using the -D flag. These flags can be set with
+-D@var{FLAG_NAME}=@var{VALUE}. To enable or disable a boolean flag,
+-D@var{FLAG_NAME}=True and -D@var{FLAG_NAME}=False can be used.
 
 @itemize
 @item
--DMAGEEC_DEBUG - Add debug information, enable -Wall and enable
-debug output printing.
+-DMAGEEC_DEBUG (default: True) - Add debug information, enable
+-Wall and enable debug output printing.
 
 @item
--DMAGEEC_WITH_USER_DOCS - Enable user documentation for
-the 'doc' build target.
+-DMAGEEC_WITH_DOC (default: True) - Enabled documentation building
+through the 'doc' build target.
 
 @item
--DMAGEEC_WITH_DESIGN_DOCS - Enable design documentation for
-the 'doc' build target.
+-DMAGEEC_WITH_DOXYGEN (default: True) - Enable building of the
+doxygen API documentation for the 'doc' build target.
 
 @item
--DMAGEEC_WITH_DOXYGEN - Enables doxygen generation for the
-'doc' build target.
+-DMAGEEC_WITH_GCC_FEATURE_EXTRACT_PLUGIN (default: True) - Enable
+building of the GCC feature extractor as part of the default build target.
 
 @item
--DMAGEEC_WITH_GCC_FEATURE_EXTRACT_PLUGIN - Enable building of
-the GCC feature extractor as part of the default build target.
+-DMAGEEC_WITH_GCC_DRIVER (default: True) - Enable building of
+the GCC wrapper driver as part of the default build target.
 
 @item
--DMAGEEC_WITH_GCC_DRIVER - Enable building of the GCC
-wrapper driver as part of the default build target.
+-DGCC_PLUGIN_INCLUDE_DIR (default: Undefined) - Directory to search
+for the plugin headers for GCC. If not specified then the
+build will use the system GCC (if available) to search for
+appropriate plugin headers.
 @end itemize
 
 @subsection Build targets
@@ -149,33 +149,72 @@ wrapper driver as part of the default build target.
 As well as various build options, there are also some custom
 targets which can be built.
 
-The default build target does not build documentation. Instead
+The default build target does not build documentation. Instead,
 there are a number of custom targets which can be used to
 build the documentation.
 
 @itemize
 @item
-info - Builds info files for user and design documentation
+doc - Builds all of the documentation enabled in the
+configure step. This builds info, html and pdf versions of
+user documentation as well as doxygen
 @item
-html - Builds html documents for user and design documentation
+info - Builds info files for all of the user documentation
 @item
-pdf - Builds pdf documents for user and design documentations
+html - Builds html documents for all of the user documentation
 @item
-user-guide-info - Builds info version of the user guide
+pdf - Builds pdf documents for all of the user documentation
 @item
-user-guide-html - HTML version of the user guide
+mageec-doxygen - Build doxygen documentation
 @item
-user-guide-pdf - PDF version of the user guide
+building-mageec-info - Builds info version of this
+guide to building MAGEEC
 @item
-design-info - Builds info version of the design document
+building-mageec-html - Builds html version of this
+guide to building MAGEEC
 @item
-design-html - HTML version of the design document
+building-mageec-pdf - Build pdf version of this
+guide to building MAGEEC
 @item
-design-pdf - PDF version of the design document
+mageec-design-info - Builds info version of the
+MAGEEC design document
+@item
+mageec-design-html - Builds html version of the
+MAGEEC design document
+@item
+mageec-design-pdf - Builds pdf version of the
+MAGEEC design document
+@item
+mageec-feature-extractor-info - Builds info version of
+the documentation for the GCC feature extractor plugin
+@item
+mageec-feature-extractor-html - Builds html version of
+the documentation for the GCC feature extractor plugin
+@item
+mageec-feature-extractor-pdf - Builds pdf version of
+the documentation for the GCC feature extractor plugin
+@item
+mageec-gcc-wrapper-info - Builds info version of the
+documentation for the GCC driver wrapper
+@item
+mageec-gcc-wrapper-html - Builds html version of the
+documentation for the GCC driver wrapper
+@item
+mageec-gcc-wrapper-pdf - Builds pdf version of the
+documentation for the GCC driver wrapper
+@item
+mageec-interfaces-info - Builds info version of the
+documentation on the MAGEEC API
+@item
+mageec-interfaces-html - Builds html version of the
+documentation on the MAGEEC API
+@item
+mageec-interfaces-pdf - Builds pdf version of the
+documentation on the MAGEEC API
 @end itemize
 
-After any of the above targets are build, building the 'install'
-target will install all build documentation.
+After any of the above targets are build, the 'install'
+target will install all built documentation.
 
 @node GNU Free Documentation License
 @chapter GNU Free Documentation License
