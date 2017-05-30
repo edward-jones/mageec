@@ -28,6 +28,23 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pdf)
 
 if (MAKEINFO_EXECUTABLE)
+  # MAGEEC command line tool
+  add_custom_target (mageec-info
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec.texi
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/info
+    COMMENT "Generating MAGEEC command line guide info." VERBATIM)
+  add_custom_target (mageec-html
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec.texi "--html"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
+    COMMENT "Generating MAGEEC command line guide html." VERBATIM)
+  add_custom_target (mageec-pdf
+    COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/mageec.texi "--pdf"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pdf
+    COMMENT "Generating MAGEEC command line guide pdf." VERBATIM)
+  add_dependencies (info mageec-info)
+  add_dependencies (html mageec-html)
+  add_dependencies (pdf  mageec-pdf)
+
   # Building MAGEEC guide
   add_custom_target (building-mageec-info
     COMMAND ${MAKEINFO_EXECUTABLE} ${doc_src}/building-mageec.texi

@@ -167,6 +167,15 @@ pdf - Builds pdf documents for all of the user documentation
 @item
 mageec-doxygen - Build doxygen documentation
 @item
+mageec-info - Builds info version of the MAGEEC command
+line tool guide.
+@item
+mageec-html - Builds html version of the MAGEEC command
+line tool guide.
+@item
+mageec-pdf - Builds pdf version of the MAGEEC command
+line tool guide.
+@item
 building-mageec-info - Builds info version of this
 guide to building MAGEEC
 @item

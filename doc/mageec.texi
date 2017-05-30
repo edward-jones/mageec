@@ -1,7 +1,7 @@
 \input texinfo
-@setfilename mageec-design.info
+@setfilename mageec.info
 @afourpaper
-@settitle MAGEEC Design
+@settitle MAGEEC Command Line Tool
 @paragraphindent 0
 
 @copying
@@ -20,7 +20,7 @@ Texts. A copy of the license is included in the section entitled
 @end copying
 
 @titlepage
-@title MAGEEC GCC Feature Extraction Plugin
+@title MAGEEC Command Line Tool
 @subtitle MAchine Guided Energy Efficient Compilation
 @author Edward Jones
 @page
@@ -35,23 +35,19 @@ Texts. A copy of the license is included in the section entitled
 This document describes the MAGEEC standalone command.
 
 @menu
-* Overview::
-* Design::
-* Features::
-* Usage::
-* Usage notes::
-* Example usage::
+* MAGEEC Command Line Tool::
 * GNU Free Documentation License::
 @end menu
 
-@node Overview
+@node MAGEEC Command Line Tool
+@chapter MAGEEC Command Line Tool
+
 @section Overview
 
 The MAGEEC command line utility is a standalone command used
 to perform some important tasks, as well as some maintainance
 procedures.
 
-@node Design
 @section Design
 
 The command line utility is used to perform the important
@@ -65,7 +61,6 @@ The utility is linked against the MAGEEC core library
 which gives it access to the the machine learners and the
 MAGEEC database file.
 
-@node Usage
 @section Usage
 
 The tool can be run in various modes, all of which require a
@@ -151,7 +146,6 @@ to the framework.
 database.
 @end itemize
 
-@node Training
 @subsection Training
 
 When training, a database is specified, along with the machine
@@ -184,7 +178,6 @@ trained for. When results are added to the database, each
 result has an associated string identifier which describes
 what quality of the program the result is measuring.
 
-@node Adding results
 @subsection Adding results
 
 Results are added to the database through the '--add-results'
@@ -193,7 +186,6 @@ format:
 
 @c results file format
 
-@node Example usage
 @section Example usage
 
 mageec --help
