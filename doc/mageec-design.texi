@@ -37,6 +37,7 @@ Efficient Compilation}.
 
 @menu
 * MAGEEC Design::
+* References::
 * Glossary::
 * GNU Free Documentation License::
 @end menu
@@ -55,18 +56,16 @@ Contemporary compilers mostly use a fixed pipeline of passes when
 optimizing. This pipeline can often be configured by the user, either
 at a high level to specify the overall degree of optimization desired,
 or at a low level to enable or disable specific optimizations, however
-for a given invocation of the compiler the pipeline is fixed. The
-pass pipelines for common optimization levels are balanced to work
-well with the widest range of code which may pass through the
-compiler, however for any given piece of code it will not necessarily
+for a given invocation of the compiler the pipeline is for the most
+part fixed. The pass pipelines for common optimization levels (such
+as -O3 in gcc) are balanced to work well with the widest range of
+code, however for a given piece of code the passes will not necessarily
 be optimal. In many compilers the user may tune the pipeline for a
-given program or source file, however this is a non-trivial manual
-task which requires a lot of trial and error, and a lot of
-iterations of compilation.
+given program or source file, however this is generally a involved
+manual task which requires trial and error, and a lot of iterations
+of compilation.
 
-@c image of typical compile approach
 @center @image{"images/current-pass-pipelines", 6in}
-@c filename[, width[, height[, alttext[, extension]]]]}
 
 From the perspective of the user, it would be reassuring to know
 that the compiler is not missing optimization opportunities. If the
@@ -75,15 +74,17 @@ it could also be feasible to simplify the user experience by
 not requiring them to manually disable and enable flags to
 squeeze maximum performance from their code.
 
-From the perspective of the compiler writer, it would be beneificial
+From the perspective of the compiler writer, it would be beneficial
 to avoid the laborious task of tuning the pass pipeline for each new
 processor and CPU. For a given architecture, there can exist a vast
 array of CPUs which vary in the hardware features supported and
-the intricacies of their microarchitecture. @c ARM example?
-For each microarchitecture it is necessary to optimize the
-compiler to target it, and automatically optimizing the pass
-pipeline is a way in which performance can be specialized for a
-given core requiring minimal input from the compiler writer.
+the intricacies of their microarchitecture. For example, for the
+AArch64 backend of LLVM, there are currently 15 different CPUs
+which can be targeted, differing in the set of supported features
+and the scheduling model. For each CPU it is necessary to optimize
+the compiler to target it, and automatically optimizing the pass
+pipeline is a way in which extra performance may be extracted for
+a given core with minimal input from the compiler writer.
 
 A further point of interest is that most compilers currently
 optimize for speed, and give less attention to code size, energy,
@@ -94,7 +95,7 @@ optimizing for energy and code size at the same time, or
 optimizing for speed whilst keeping compile time to a minimum.
 
 If selecting the best compiler configuration can be automated,
-then there are several potential benefits which can be realized.
+then there are several potential benefits which may be realized:
   
 @itemize
 @item
@@ -113,17 +114,14 @@ compilers (which can only control the pass pipeline at a
 per-invocation level).
 
 @item
-Optimize for new metrics such as energy or compilation speed. Or
-features which are a function of multiple metrics.
+Optimize for new metrics such as energy or compilation speed.
 
 @item
 Provide a more powerful interface to control tradeoffs
 between different metrics, such as balancing energy and size.
 @end itemize
 
-@c Diagram of more ideal optimization approach
 @center @image{"images/better-pass-pipelines", 6in}
-@c filename[, width[, height[, alttext[, extension]]]]}
 
 @section Other optimization approaches
 
@@ -142,20 +140,21 @@ the code, which can be used to inform the ordering of basic
 blocks and the ferocity of inlining.
 
 Profile guided optimization can produce considerable
-performance improvements (around 15%). However there are a
-couple of drawbacks. First, it requires a project to be
-built twice which can be cumbersome for larger software
+performance improvements (in some cases as much as 15% improvement).
+However there are a few drawbacks. First, it requires a
+project to be built twice which can be cumbersome for larger software
 projects. Second, it requires a long run of the profiled
 program with representative data to produce an accurate
 profile. Finally, current PGO implementations only provide a
-limited amount of information about the program; namely the
-frequently of usage of functions and basic blocks. Nevertheless
-it is a very valueable technique.
+limited amount of information about the program; for example
+in GCC using the -fprofile-generate option will generate
+a profile which stores information about branch probabilities,
+and the values of some expressions in the program [1].
 
 @item
 @b{MILEPOST} - Much like the aim of MAGEEC, MILEPOST augmented
 a compiler with the ability to make optimization decisions
-based on statically derived features of an input program.
+based on statically derived features of an input program. [2]
 
 MAGEEC tries to improve on MILEPOST by providing a more
 flexible framework to augment compilers with a machine
@@ -170,9 +169,6 @@ with multiple machine learners whereas MILEPOST used a
 single machine learner technique called Predictive
 Search Distributions.
 
-@c TODO: More info, less combative tone
-@c citations for other authors work
-
 @item
 @b{Other Examples}
 @c TODO: Other examples
@@ -184,7 +180,7 @@ Search Distributions.
 @item
 @b{Program Unit} - A contiguous part of a program which can be uniquely
 identifier in both the original source code and the final executable.
-Examples are modules, functions and possibly loops and basic blocks.
+Examples are modules, functions, loops and basic blocks.
 
 @item
 @b{Feature} - A measurable and quantifiable aspect of a program unit, which
@@ -195,7 +191,7 @@ the number of instructions in a basic block.
 @b{Parameter} - A value which can be controlled by some mechanism in the
 compiler to affect the decree or nature of optimization, with the
 effect of changing the object code produced by the program. For example:
-a flag indicating whether the 'dead code elimination' pass should be
+a flag indicating whether the `dead code elimination' pass should be
 executed.
 
 @item
@@ -204,20 +200,20 @@ individual program unit. Multiple units of the same program may
 use the same configuration of the compiler.
 @end itemize
 
-@section Theory for how MAGEEC works
+@section Theory behind MAGEEC
 
 MAGEEC automates the selection of optimizations by using a
-machine learner to may key decisions about the pass to
+machine learner to make key decisions about the pass to
 run and any tunable parameters which may be set. An
 association is learned between features derived from the
 input source code, and the appropriate parameters to use in
 the compilation to build the executable. Like all machine
 learning processes, there is a training stage; where the
-machine learner is fed features and corresponding 'good'
+machine learner is fed features and corresponding `good'
 parameters to build up an association; and a prediction stage;
 where the machine learner is used with a new, previously
 unencountered program and used to select a set of parameters
-which are likely to produce a good quality output executable.
+which are likely to produce a better performing output executable.
 
 @center @image{"images/high-level-gather", 6in}
 
@@ -228,12 +224,21 @@ which are likely to produce a good quality output executable.
 MAGEEC uses static features derived ahead of time from the input
 program in order to predict parameters which should be used
 for a given compilation. However there are a couple of other
-approaches which can be used for compiler tuning. One approach
-is to predict compiler parameters based on dynamic features
-instead of static features, and the other approach is to
-iteratively compile a program refining the set of compilation
-parameters after each build. Compared to other approaches,
-our approach has some advantages and disadvantages:
+approaches which can be used for compiler tuning.
+
+One approach is to predict compiler parameters based on
+dynamic features instead of static features. Where static
+features are features derived at compile time from the input
+source code, dynamic features are derived at run time based
+on instrumentation of the tested program.
+
+@c citations for other work here?
+
+Another approach is to iteratively compile a program gradually
+refining the set of compilation
+parameters after each build. Compared these approaches,
+our approach based on a predictive model using static features
+has some advantages and disadvantages:
 
 Advantages:
 @itemize
@@ -278,7 +283,7 @@ Disadvantages:
 @itemize
 @item
 Static features cannot express the effects of the input data on the
-program. Two program could have identical features, but exhibit very
+program. Two program can have identical features, but exhibit very
 different performance characteristics depending on the data provided
 to it. Indeed, one program on its own can also exhibit very different
 performance depending on the data provided to it. This can be mitigated,
@@ -290,13 +295,13 @@ Static features may be less representative of the program's behavior.
 For example a program may contain a lot of code which is only executed in
 exceptional circumstances. If dynamic features or interative
 compilation is used, then these cold code paths may never be exercised,
-and therefore won't be reflected in the features. If static features
-are used, then these cold paths will contribute as much to the
-features as hot code, even though they are almost irrelevant to the
-performance of the program.
+and therefore won't bias the features. If static features
+are used, then these cold paths will be equally represented in the
+features as the hot code, even though they are almost irrelevant to
+the performance of the program.
 @end itemize
 
-@section MAGEEC features
+@section Features of MAGEEC
 
 The design of MAGEEC makes it possible to use a variety of machine
 learners through a common interface, and makes it possible to use
@@ -322,9 +327,6 @@ possible.
 @c to make using MAGEEC more straightforward for users.
 
 @section MAGEEC components
-
-@c @center @image{"gather-high-level", 6in}
-@c @center @image{"predict-high-level", 6in}
 
 MAGEEC itself is made up of a set of components and utilities which
 allow a compiler to be instrumented with the ability to predict
@@ -368,10 +370,10 @@ their current implementations.
 
 Feature extraction involves taking an input source program, and
 outputting a set of features for each of the individual
-program units in the program. Each source file can produce
+units of the program. Each source file can produce
 multiple sets of features for each different program unit in 
 the file. So the module will produce a feature set, and each
-function could produce its own feature set. It is even feasible
+function will produce its own feature set. It is even feasible
 that feature could be generated for each basic block or loop.
 
 @subsubsection Interface
@@ -381,9 +383,9 @@ exactly the features are extracted is up to the program doing the
 feature extraction, and the features which are extracted is also
 at the whim of the feature extractor. The limitations placed by
 MAGEEC are that the type of the features must be one of a set of
-known types (this set of types is common with the types which
-the machine learners can handle), and a given extracted feature
-is consistently identified by the name numerical identifier.
+known types, which is a set of types which is common with the types
+which the machine learners can handle, and a given extracted feature
+is consistently identified by a numerical identifier.
 
 The interface to MAGEEC allows a feature extractor to insert a
 new set of features into the file for a program unit, and
@@ -394,8 +396,8 @@ receive a unique identifier for those features back.
 @center @image{"images/feature-extractor", 6in}
 
 As well as the interface to the feature extractor, a feature
-extractor plugin in also provided for the GCC compiler. This
-plugin can be provided as a plugin to gcc, and used to
+extractor plugin is also provided for the GCC compiler. This
+plugin can be provided as a plugin to GCC and used to
 extract module and function features from the program.
 
 This plugin takes the input program and outputs a .csv file
@@ -407,8 +409,8 @@ The benefit of the GCC feature extractor is that it allows feature
 extraction to be performed on C, C++ and Fortran code without
 requiring a compiler-specific feature extractor to be written.
 Provided code can be built with GCC, feature extraction can be
-achieved. This makes it ideal for use when using a proprietary
-compiler which cannot perform feature extraction itself.
+achieved. This makes it ideal for use alongside a proprietary
+compiler which cannot be augmented with feature extraction itself.
 
 The feature extractor extracts different sets of features
 depending on whether a function or a module is the program unit
@@ -438,9 +440,10 @@ parameters describing the configuration of the compiler for that
 compilation. The interface takes all of the information describing
 the compilation of a program unit; the features and parameters
 involved in the compilation, and returns a unique identifier for
-that compilation. Later, results will be associated with the
-compilation, and then there will be enough information to train
-a machine learner.
+that compilation. Later, results will be associated with this
+compilation and the features, parameters and results used in a
+given compilation will be used as a data point as input to training
+the machine learner.
 
 For prediction, an interface is also offered which allows the driver
 to use a previously trained machine learner to make decisions about
@@ -467,9 +470,9 @@ program unit.
 @center @image{"images/compiler-driver-predict", 6in}
 
 When predicting, the driver strips optimization flags and instead
-replaces the flags with flags derived through multiple calls out
-to the MAGEEC interface to the machine learner. It uses previously
-extracted features to inform this process.
+replaces the flags with flags derived from predictions made by the
+machine learner accessed through MAGEEC. The prediction makes use
+of the features previously extracted for the current module.
 
 Because the GCC wrapper driver works externally to the compiler, it
 does not require any invasive changes to the compiler in order to
@@ -513,8 +516,9 @@ to using a database. By using a database, these relations can be
 maintained and enforced.
 
 @item
-sqlitebrowser can be used to query the database manually, making
-it easier to debug and manually fix if it is ever necessary.
+The open source sqlitebrowser tool [3] can be used to run SQL queries
+agains the database manually, making it easier to debug and
+manually fix if it is ever necessary.
 
 @item
 SQLite allows multiple processes to read/write the same file,
@@ -523,11 +527,12 @@ performance
 
 @item
 SQLite is high performance, and offers resilience against
-data corruption out of the box.
+data corruption.
 @end itemize
 
 The main disadvantage to using SQLite is that it adds some
-complexity to the interfaces.
+complexity to the interfaces. However this is worthwhile
+for the added flexibility which it offers.
 
 @subsubsection Database structure
 
@@ -535,6 +540,9 @@ Below is a description of the database structure and the
 associated relations.
 
 @center @image{"images/database", 6in}
+
+
+@c Finish description here
 
 @subsection Machine learner interface
 
@@ -551,8 +559,8 @@ user may wish to make decisions on, and which therefore forms the set
 of parameters which the machine learner should train to make a
 decision against.
 
-The machine learner can use the dump of data however it likes.
-However, the end result of the training process is a single binary
+The machine learner uses the results data in order to generate
+some training data. The end result of the training process is a single binary
 blob which is opaque to MAGEEC and the MAGEEC file format, but
 can be deciphered by the machine learner at a later time when it
 is required to make a decision. This binary blob is returned by
@@ -570,7 +578,7 @@ decision, or it can refuse, leaving it up to the user to then
 make the decision itself.
 
 The features provided to the machine learner are made up of a
-unique identifier, as well as a 'type'. The unique identifier
+unique identifier, as well as a `type'. The unique identifier
 is guaranteed by the feature extractor to unique identify the
 same feature every time, and the type is one of a number of
 types specified by MAGEEC.
@@ -623,7 +631,7 @@ stored in the blob.
 When a decision must be made, the appropriate classifier tree is
 found, and the features for the program unit are used to determine
 the classification for that decision. For a boolean decision, the
-resulting decision could be 'true', 'false', or 'native' if the
+resulting decision could be `true', `false', or `native' if the
 machine learner is not able to make a decision.
 
 @center @image{"images/c50", 6in}
@@ -635,7 +643,7 @@ and the decision trees are human readable.
 
 One nearest neighbor is a conceptually very simple classification
 method. Each feature set form a point in n-dimensional space, where
-each feature is mapped to an individual axis. Each feature set 'point'
+each feature is mapped to an individual axis. Each feature set `point'
 is associated with a parameter set, which is the parameter set for
 the best result for that feature set in the results data. When a
 decision needs to be made, the closest feature set to the input
@@ -666,8 +674,8 @@ CMake build systems.
 
 @subsubsection Combined elimination script
 
-This script performs the combined elimination process as described in @c citation.
-This script exists in order to do an iterative
+This script performs the combined elimination process as described by Pan
+and Eigenmann [4]. This script exists in order to do an iterative
 search towards the best combination of compilation flags for a
 benchmark, which can be used to effectively train many machine learners.
 The naive way to find good flag combinations is to do a random
@@ -677,10 +685,9 @@ combined elimination is much more effective.
 
 The combined elimination process starts with all flags enabled,
 and then attempts to disable flags in groups in order to find a
-more optimal set of flags for a given program. It has been shown
-to be more effective than other iteractive compilation techniques.
+more optimal set of flags for a given program.
 
-@c @image Combine elimination diagram
+@c Combined elimination pseudo code
 
 Combined elimination is used by MAGEEC primarily for finding good
 data points for the training process.
@@ -735,8 +742,9 @@ cut down the search space considerably:
 @itemize
 @item
 In general, configurations with most flags on do better than
-configurations with less flags. It is extremely unlikely
-that enabling only a single flag would be better than -O3
+configurations with less flags when optimizing for energy and
+time. It is extremely unlikely that enabling only a single
+flag would be better than -O3
 
 @item
 As a first approximation, most flags can be treated
@@ -751,7 +759,7 @@ Taking factors like this into account, it is possible to
 trim down the search space considerably. Using techniques like
 principle component analysis and fractional factorial design
 to create a training set it is possible to reduce the amount
-of test runs that need to be done considerably. In some cases,
+of test runs that need to be done substantially. In some cases,
 this approach is viable, however for many programs used in the
 training process compilation times may be sufficiently high
 that it is worth looking for better solutions.
@@ -761,14 +769,17 @@ techniques can be used in order to hill climb towards solutions
 which beat the most aggressive optimization options like -O3.
 There are various techniques that can be used for this, however
 combined elimination is straightforward and has been demonstrated
-to find promising results. @c citation of exact results
+to find promising results. In the paper introducing combined
+elimination, Pan and Eigenmann saw average improvements of
+4.1% over -O3 for SPEC CPU2000 floating point benchmarks, and
+3.9% for integer benchmarks [4].
 
 Many incremental compilation techniques suffer from the risk
 of only finding a local minima, rather than a global minima, and
 this is true of combined elimination too. Provided the local
 minima is still an improvement over the default compilation
 optimizations this is not a major concern, and is a trade-off
-working making in order to reduce the search space.
+working making in order to reduce the search time.
 
 Aside from the process used to guide the search, another
 important component is the set of benchmarks which are used.
@@ -778,7 +789,7 @@ need to be varied so that the features gathered for
 the benchmarks are as representative as possible of
 the features which will manifest in any potential real-world
 programs. Most importantly though is that there need to
-be a lot of benchmarks. Machine learners require a glut of
+be a lot of them. Machine learners require a glut of
 data to produce reliable and predictable results, so having
 a lot of benchmarks with as many program units (modules and
 functions) as possible is key.
@@ -799,7 +810,7 @@ is very straightfoward. Here a previously unseen program has its
 features extracted, and these features are passed to a machine
 learner by the compiler through MAGEEC. The features are
 accompanied by a decision to make, which is a parameter which
-the machiner learner was previously trained to make decisions
+the machine learner was previously trained to make decisions
 against. This parameter could correspond to an optimization
 flag to be enabled or disabled, or an internal heuristic value
 to be tuned. The machine learner will provide a decision to
@@ -807,18 +818,16 @@ the compiler, and the compiler can use this to update the
 parameters which will be used to compile the program unit.
 
 The result of this process should be a binary which is more
-optimal than the binary which would have been produced by the
-original compiler.
+optimal than the binary which would have been produced using
+the standard optimization options.
 
 @section Experimentation
 
 The previous sections have described the theory and design of
 MAGEEC. Now we describe an experiment designed to test the
-framework, and its results and conclusion.
+framework.
 
 @subsection Motivation
-
-@c Should be a more key part of this paper?
 
 Current compilers generally optimize for speed, and
 occasionally for size. One of the advantages of the
@@ -827,13 +836,16 @@ and easy to target any other metric which is quantifiable.
 
 One of the key goals of MAGEEC is to optimize to reduce
 the energy consumption of programs. The current approach
-to optimizing for energy is based on the assumptions that
+to optimizing for energy is generally based on the assumption that
 speed and energy usage are closely intertwined, and
 therefore simply optimizing for speed is sufficient.
-Previous work by @c Cite
-demonstrated that this is not always the case. MAGEEC
-seeks to build on this to make it possible to automatically
-specialize a compiler's configuration to reduce energy consumption.
+Previous work by Pallister et al [5] verified that this was
+broadly true, however they also showed that for architectures
+with more complex pipelines such as the Cortex-M3, the
+correlation was not as strong. MAGEEC seeks to build on this
+observation to make it possible to automatically specialize
+a compiler's configuration to reduce energy consumption
+specifically.
 
 Presently, much work is going into the task of reducing
 energy consumption. This is important in multiple fields.
@@ -842,8 +854,9 @@ power from smaller devices; and in HPC this can result in
 reduced electricity bills. Reducing energy consumption can
 also allow for new technology to be made viable. For example
 a reduction in energy consumption used by a processor may
-mean that it is viable to power it from solar energy.
+mean that it is viable to power it using solar energy.
 
+@c First reference to the 'original MAGEEC project'
 The original MAGEEC project looked at reducing energy
 consumption in embedded systems. This project has built on
 this work and aims to demonstrate that this is also
@@ -878,7 +891,7 @@ energy values can become skewed:
 @itemize
 @item Scheduling of processes by the operating system can
 cause variations betweens, as the process may be preempted
-or moved between processes
+or moved between runs.
 
 @item Modern processor dynamically change their clock
 frequency which affects energy consumption in unpredictable
@@ -906,7 +919,8 @@ many systems to reduce interruption caused by the
 sharing of resources. Indeed on HPC systems the
 environment in which a program is run can be controlled
 to the extend that it is possible to get accurate
-energy measurement results @c cite example of accuracy
+energy measurement results
+@c Quantification of accuracy of energy measurement on HPC
 
 A second difficulty is accurately associating sampled
 results with program units in the input program. The aim
@@ -920,7 +934,8 @@ function throughout the run of the program. Therefore,
 to obtain the average amount of energy per function
 invocation we must take the total and divide it by the
 number of calls to that function. This then gives us
-an estimate for the average energy used in the function.
+an estimate for the average energy used during each
+invocation of the function.
 
 @c Describe per function energy measurement better
 
@@ -936,16 +951,18 @@ MAP framework.
 @subsubsection Allinea MAP
 
 Allinea MAP is a profiler for C/C++ and Fortran code.
-It is able to profile OpenMP, MPI and ptheads code
+It is able to profile OpenMP, MPI and pthreads code
 with minimal overhead, which makes it ideal for
-profiling HPC codes. As well as a user interface,
+profiling HPC codes. As well as offering a user interface,
 it can also output profiles in various formats
 which can be used by other tools.
 
 @subsection Benchmarks
 
+@c segue
+
 For use when training, there are some desirable properties
-which should be covered by the benchmark.
+which should be covered by the benchmark:
 
 @itemize
 @item
@@ -961,34 +978,35 @@ The benchmark should be straightforward to build. It
 needs to be possible to pass flags to the compiler in
 order to control the compile options, and
 this requires the build system to not get in the way.
-Ideally, the compilation time should be relatively low too.
+
+@item
+The compilation time should be low, as a long compile time
+causes the training process to take longer.
 
 @item
 It must be straightforward to instrument and run the
 resultant programs to derive results. For some metrics
-such as code size it is not necessary to actually run
-the executable produced by a test run, but for metrics
+such as code size it is not necessary for the produced
+executable to be run, but for metrics
 like energy it is important to be able to run under
-a profiler in order to derive energy measurements.
+a profiler in order to gather energy measurements.
 
 @item
 Representative input data. The input data used when
 measuring the program must be representative of the
 kind of data which would be provided to a similar
-program in real-code.
+real-world program.
 
 @item
-Controllable runtime. In order to accurately take
+Controllable run time. In order to accurately take
 time and energy measurements it may be necessary to
 run for a long time under a profiler. If the program
 does not run for sufficiently long then results will
 be inaccurate, if it runs for too long then it will
-increase the time of training considerably.
+increase the time to gather results considerably.
 
 @item
-Representaive code for the target system. For HPC
-applications it is good to train against representative
-HPC code.
+Representaive code for the target system.
 
 @item 
 Minimal external dependencies. Any time or energy
@@ -1013,13 +1031,11 @@ run on HPC systems.
 In the end, we settled on using a number of benchmarks
 from the Mantevo benchmark set.
 
-@c mantevo reference
-
 @subsubsection Mantevo
 
-Mantevo is a bunch of small benchmarks which contain
-common numerical kernels used in HPC applications. They
-have minimal external dependencies and the applications
+Mantevo is a set of small benchmarks which contain
+common numerical kernels used in HPC applications [6].
+They have minimal external dependencies and the applications
 are build with simple Makefiles.
 
 The benefits of using Mantevo are:
@@ -1046,11 +1062,11 @@ The build systems for each program are simple makefiles, and
 can be easily adjusted if necessary.
 @end itemize
 
-The main disadvantage of using Mantevo is that there are only 10
-applications in total.
-@c number of apps
+The main disadvantage of using Mantevo is that there are only 13
+miniapps in total.
 
-The applications in Mantevo (version ???) are as follows:
+The applications in the current version of Mantevo (version 3.0) are
+as follows:
 
 @multitable @columnfractions .25 .75
 @item CloverLeaf @tab A Lagrangian-Eulerian hydrodynamics benchmark @c cite
@@ -1073,7 +1089,7 @@ The applications in Mantevo (version ???) are as follows:
 The testing of the MAGEEC framework was performed on a system
 called NEALE, a novel cooling demonstrator which is part of the
 Energy Efficient Computing Research Program at the STFC Hartree
-Centre. The specification of this system are as follows:
+Centre [7]. The specification of this system are as follows:
 
 @multitable @columnfractions 0.25 .75
 @item Architecture @tab Ivybridge
@@ -1085,13 +1101,11 @@ Centre. The specification of this system are as follows:
 @item Storage @tab 216TB BeeGFS parallel storage
 @end multitable
 
-@c cite http://community.hartree.stfc.ac.uk/wiki/site/eecrp/eec_userguide.html
-
 The system uses the SLURM batch scheduler, and has support
 for profiling through Allinea MAP.
 
-The Ivybridge Xeon is a common processor used in many HPC systems.
-The large number of nodes makes it possible to run a large
+The Ivybridge Xeon is a common processor used in many HPC systems and
+the large number of nodes makes it possible to run a large
 number of benchmark test runs in parallel.
 
 @subsection Experiment setup
@@ -1101,7 +1115,7 @@ framework.
 
 The NEALE machine is used to compile and run all of the
 benchmarks, and energy measurements are taken using Allinea MAP.
-The GCC feature extractor is used to extra
+The MAGEEC GCC feature extractor plugin is used to extract
 features from the benchmarks, and the GCC wrapper is
 used to record and control the pass pipeline which is
 being run. The underlying version of GCC used was
@@ -1176,14 +1190,14 @@ source files.
 @item A coverage build - Energy results from Allinea MAP
 give the total energy used in a function, however we
 are interested in the average energy used in each
-invocation of the function. This means the total
+invocation of a function. This means the total
 energy for the function needs to be divided by the
 trip count for the function, which can be extracted from
 a coverage build. The coverage build is provided the
 same input as the benchmark runs so that the coverage
 data is accurate.
 
-@item Compiarson runs at -O3 and -Os - The benchmark
+@item Comparison runs at -O3 and -Os - The benchmark
 is built and run at -O3 and -Os in order to have a
 point of comparison to compare the results from the
 combined elimination runs.
@@ -1193,7 +1207,7 @@ Each test run generated by combined elimination is
 run single-threaded on a single node of the NEALE
 machine. This allows multiple test runs and multiple
 benchmark runs to be done in parallel without interfering
-with each other substantially, and sppeds up the data
+with each other substantially, and speeds up the data
 gathering process substantially. Only some stages of
 the combined elimination process can be parallelized,
 but running in parallel where possible cuts down the
@@ -1201,7 +1215,7 @@ time to gather results considerably.
 
 Each of the benchmarks being run is given inputs which
 cause the program to run for around 5 minutes. This is
-enough time for the profile to take a decent number of
+enough time for the profile to gather a decent number of
 samples to minimize error, whilst avoiding slowing down
 the combined elimination process too much.
 
@@ -1260,7 +1274,7 @@ than a function with similar features which was
 executed a hundred times. The energy measurement for
 each function must therefore be normalized by the
 number of times the function was called. This will then
-give a measurement of the 'quality' of a compilation
+give a measurement of the `quality' of a compilation
 of the function which factors out the number of calls
 to that function.
 
@@ -1274,7 +1288,7 @@ each function by the trip count, we can effectively
 normalize the energy data.
 
 The energy used by a module is harder to quantify. We
-don't have a measure of the 'energy' used by a module,
+don't have a measure of the `energy' used by a module,
 because the energy for the module is distributed among
 the functions which it is comprised of. Therefore
 in order to get a measure of the energy usage of a
@@ -1556,7 +1570,7 @@ previously unseen benchmark.
 
 Note that MiniAMR and MiniFE never appeared in the
 training sets, so all of their values are highlighted.
-Also note a couple of entries where the value is '0',
+Also note a couple of entries where the value is `0',
 signifying no data was derived at that point.
 
 @c Bar graph of results relative to -O3, benchmarks along bottom, different 
@@ -1630,6 +1644,42 @@ signifying no data was derived at that point.
 @c 1NN
 @c Design decisions
 @c Open source
+
+@node References
+@chapter References
+
+@c Just using Harvard style references for the moment
+
+@multitable @columnfractions .05 .95
+
+@item [1] @tab Using the GNU Compiler Collection (GCC), (2017).
+@i{Instrumentation Options}. [online] Available at: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html [Accessed 31 May. 2017]
+
+@item [2] @tab Fursin, G., Miranda, C., Temam, O., Namolaru, M.,
+Yom-Tov, E., Zaks, A., Mendelson, B., Bonilla, E., Thomson, J.,
+Leather, H. and Williams, C., 2008, June.
+MILEPOST GCC: machine learning based research compiler. In @i{GCC Summit}.
+
+@item [3] @tab DB Browser for SQLite, (2017). @i{DB Browser for SQLite}.
+[online] Available at: http://sqlitebrowser.org/ [Accessed 31 May. 2017]
+
+@item [4] @tab Pan, Z. and Eigenmann, R., 2006, March. Fast and
+effective orchestration of compiler optimizations for automatic
+performance tuning. In @i{Code Generation and Optimization, 2006.
+CGO 2006. International Symposium on} (pp. 12-pp). IEEE.
+
+@item [5] @tab Pallister, J., Hollis, S.J. and Bennett, J., 2015.
+Identifying compiler options to minimize energy consumption for
+embedded platforms. @i{The Computer Journal, 58}(1), pp.95-109.
+
+@item [6] @tab Mantevo.org, (2017). @i{Home of the Mantevo Project}.
+[online] Available at: https://mantevo.org/ [Accessed 31 May. 2017]
+
+@item [7] @tab Hartree Centre, Science and Technology Facilities Council,
+(2017). @i{Resources Available}. [online] Available at:
+http://community.hartree.stfc.ac.uk/wiki/site/admin/resources.html
+[Accessed 31 May. 2017]
+@end multitable
 
 @node Glossary
 @chapter Glossary
