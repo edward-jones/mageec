@@ -541,8 +541,78 @@ associated relations.
 
 @center @image{"images/database", 6in}
 
+@itemize
+@item @b{Metadata} - This table stores various metadata
+about the database itself. The only value this is used for
+is the version number of the database.
 
-@c Finish description here
+@item @b{FeatureType} - The feature extractor has a number
+of distinct features of the input program which are extracted.
+Each of these is assigned a unique identifier. This table
+maps from this identifier to an enumeration value which
+identifies the type of the feature. The valid `type' enumeration
+values are specified by the framework.
+
+@item @b{FeatureSetFeature} - This stores a one-to-many mapping
+from an identifier for a set of features, to the features which
+make up that feature set. A FeatureSet is made up of multiple
+features, where each feature is represented by an identifier
+from the feature extractor which identifiers the feature, and
+a value for the feature.
+
+@item @b{ParameterType} - The driver of the compiler defines
+a number of parameters which can be tweaked or altered and
+assigns each one a unique identifier. For example, a boolean
+parameter could represent the presence or abscence of an
+optimization flag. Like the FeatureType, this stores a mapping
+from this identifier to an enumeration value which identifies
+the type of the parameter. Like Features, the valid `type'
+enumeration values are specified by the framework.
+
+@item @b{ParameterSetParameter} - This stores a one-to-many
+mapping from an identifier for a set of parameters, to the
+parameters which make up that parameter set. Parameters in the
+parameter set have the same form as a features, with an
+identifier and a value.
+
+@item @b{Compilation} - For each program unit which is
+compiled, an entry in the compilation table is created.
+Entries in the Compilation table create an association
+between a FeatureSet and a ParameterSet. The FeatureSet
+describes the features in the program unit which is being
+compiled, and the ParameterSet describes the compiler
+configuration that FeatureSet was compiled under. Each
+Compilation is identified by a unique identifier, and
+after the Compilation entry has been created this is used
+to associate results with the compilation.
+
+@item @b{Result} - A result represents a value measured
+for some program unit. It is linked to an entry in the
+Compilation table, which represents the program unit and
+the configuration of the compiler when it was compiled,
+and associates this with a value which quantifies the
+result of the compilation of that program unit. A result
+has an associated metric, which identifies what quality
+of the program unit was measured.
+
+@item @b{MachineLearner} - An entry in this table is
+created when a machine learner is trained. The
+data in the Result table is used by a machine learner
+in order to generate training data, and this training
+data is then stored as a blob in an entry in the
+MachineLearner table. Like individual results, each
+entry has an associated metric, and this describes the
+results which were used to train the machine learner.
+
+@item @b{CompilationDebug} - This stores metadata about
+each compilation.
+
+@item @b{FeatureDebug} - This stores metadata about
+each feature.
+
+@item @b{ParameterDebug} - This stores metadata about
+each parameter.
+@end itemize
 
 @subsection Machine learner interface
 
