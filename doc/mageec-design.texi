@@ -65,7 +65,7 @@ given program or source file, however this is generally a involved
 manual task which requires trial and error, and a lot of iterations
 of compilation.
 
-@center @image{"images/current-pass-pipelines", 6in}
+@center @image{"images/current-pass-pipelines", 150mm}
 
 From the perspective of the user, it would be reassuring to know
 that the compiler is not missing optimization opportunities. If the
@@ -121,7 +121,7 @@ Provide a more powerful interface to control tradeoffs
 between different metrics, such as balancing energy and size.
 @end itemize
 
-@center @image{"images/better-pass-pipelines", 6in}
+@center @image{"images/better-pass-pipelines", 150mm}
 
 @section Other optimization approaches
 
@@ -215,9 +215,9 @@ where the machine learner is used with a new, previously
 unencountered program and used to select a set of parameters
 which are likely to produce a better performing output executable.
 
-@center @image{"images/high-level-gather", 6in}
+@center @image{"images/high-level-gather", 150mm}
 
-@center @image{"images/high-level-predict", 6in}
+@center @image{"images/high-level-predict", 150mm}
 
 @section Comparison with other compiler tuning approaches
 
@@ -361,7 +361,7 @@ form of the C5.0 classifier and a 1NN machine learner.
 the training and prediction process.
 @end itemize
 
-@center @image{"images/high-level-components", 6in}
+@center @image{"images/high-level-components", 150mm}
 
 We now describe each of these components in more detail, and
 their current implementations.
@@ -393,7 +393,7 @@ receive a unique identifier for those features back.
 
 @subsubsection GCC plugin
 
-@center @image{"images/feature-extractor", 6in}
+@center @image{"images/feature-extractor", 150mm}
 
 As well as the interface to the feature extractor, a feature
 extractor plugin is also provided for the GCC compiler. This
@@ -461,13 +461,13 @@ GCC frontend. This wraps around the gcc, gfortran and g++ drivers
 in order to intercept and control the optimization flags passed
 to those commands.
 
-@center @image{"images/compiler-driver-gather", 6in}
+@center @image{"images/compiler-driver-gather", 150mm}
 
 When training, the driver tracks the optimization flags being used
 with the driver and records a compilation in the database for each
 program unit.
 
-@center @image{"images/compiler-driver-predict", 6in}
+@center @image{"images/compiler-driver-predict", 150mm}
 
 When predicting, the driver strips optimization flags and instead
 replaces the flags with flags derived from predictions made by the
@@ -539,7 +539,7 @@ for the added flexibility which it offers.
 Below is a description of the database structure and the
 associated relations.
 
-@center @image{"images/database", 6in}
+@center @image{"images/database", 150mm}
 
 @itemize
 @item @b{Metadata} - This table stores various metadata
@@ -704,7 +704,7 @@ the classification for that decision. For a boolean decision, the
 resulting decision could be `true', `false', or `native' if the
 machine learner is not able to make a decision.
 
-@center @image{"images/c50", 6in}
+@center @image{"images/c50", 150mm}
 
 Advantages of C5.0 are that the interface is straightforward
 and the decision trees are human readable.
@@ -720,7 +720,7 @@ decision needs to be made, the closest feature set to the input
 set is found in the training data, and the decision is made based
 on the parameters in that closest point.
 
-@center @image{"images/1nn", 6in}
+@center @image{"images/1nn", 150mm}
 
 @subsection Tooling
 
@@ -1577,7 +1577,7 @@ benchmarks, when predicting good optimizations using MAGEEC
 (through the GCC wrapper driver) along with the various
 trained databases.
 
-@center @image{"results-table", 6in}
+@center @image{"results-table", 150mm}
 
 There is a separate row for each benchmark which was
 optimized, and a separate column for each of the
@@ -1644,10 +1644,10 @@ Also note a couple of entries where the value is `0',
 signifying no data was derived at that point.
 
 @c Bar graph of results relative to -O3, benchmarks along bottom, different 
-@center @image{"results-bar-graph-1", 6in}
+@center @image{"results-bar-graph-1", 150mm}
 @c filename[, width[, height[, alttext[, extension]]]]}
 
-@center @image{"results-bar-graph-2", 6in}
+@center @image{"results-bar-graph-2", 150mm}
 @c filename[, width[, height[, alttext[, extension]]]]}
 
 @c Improvements over -O3

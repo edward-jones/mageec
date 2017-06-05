@@ -75,7 +75,7 @@ can be generated when building MAGEEC. The doxygen
 documentation provides a more precise definition of the
 interface to MAGEEC.
 
-@center @image{"images/high-level-components", 6in}
+@center @image{"images/high-level-components", 150mm}
 
 @section Design
 

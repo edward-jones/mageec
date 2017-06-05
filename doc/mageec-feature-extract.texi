@@ -50,7 +50,7 @@ extraction of static features from C, C++ and Fortran source code
 by using GCC. It is an open source plugin which extracts the
 features from the GCC internal gimple representation.
 
-@center @image{"images/feature-extractor", 6in}
+@center @image{"images/feature-extractor", 150mm}
 
 @section Design
 

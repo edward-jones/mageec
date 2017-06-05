@@ -61,9 +61,9 @@ into the database, recording the features associated with
 the program unit as well as the parameters used to
 compile it.
 
-@center @image{"images/compiler-driver-gather", 6in}
+@center @image{"images/compiler-driver-gather", 150mm}
 
-@center @image{"images/compiler-driver-predict", 6in}
+@center @image{"images/compiler-driver-predict", 150mm}
 
 @section Design
 
