@@ -171,7 +171,7 @@ Search Distributions.
 
 @item
 @b{Other Examples}
-@c TODO: Other examples
+@b{TODO: Other examples}
 @end itemize
 
 @section Terminology
@@ -1514,10 +1514,7 @@ benchmarks for real-world code. This served as a
 check of the effectiveness of MAGEEC for real
 programs.
 
-The programs used for this were as follows: ...
-
-@c TODO
-
+The programs used for this were as follows: @b{TODO}
 
 @c There are two phases to the experiment; a training phase
 @c where a subset of the Mantevo benchmarks are optimized
@@ -1643,25 +1640,380 @@ training sets, so all of their values are highlighted.
 Also note a couple of entries where the value is `0',
 signifying no data was derived at that point.
 
-@c Bar graph of results relative to -O3, benchmarks along bottom, different 
 @center @image{"results-bar-graph-1", 150mm}
-@c filename[, width[, height[, alttext[, extension]]]]}
 
 @center @image{"results-bar-graph-2", 150mm}
-@c filename[, width[, height[, alttext[, extension]]]]}
 
-@c Improvements over -O3
-@c Number of configurations of flags used
-@c Feature diversity
-@c Benchmark diversity
+@b{TODO: Improvements over -O3}
+
+@subsubsection Test of new HPC code
+
+This experiment involved taking the database trained
+for all of the benchmarks, using it to predict
+flags for new, previously unencountered test codes.
+
+The test codes used were @b{TODO}
+
+@b{TODO: Results data}
+
+We compare the energy usage of the program at -O3
+with the run using MAGEEC.
+
+@b{TODO: Results data}
+
+@section Analysis
+
+In order to quantify the effectiveness of MAGEEC,
+we need to analyse the behavior of various aspects
+of the process which could effect the performance
+of the system. Any shortcomings in these areas
+could be detrimental to the performance of the
+system.
+
+The important aspects which affect the performance
+of the system are as follows:
+
+@itemize
+@item Quality of the features
+@item Quality of the benchmark set
+@item Effect of updating the flags
+@item Potential performance benefits
+@item Correlation between features and parameters
+@item Compiler configurations encountered during optimization runs
+@item Effectiveness of the machine learner
+@item Accuracy of energy measurements on the target system
+@end itemize
+
+We now analyze each of these components in more detail.
+
+@subsubsection Quality of the features
+
+Features are used to quantify some aspect of the input program
+unit. When making predictions, the set of features are the
+only input which the machine learner uses to make the prediction.
+Therefore, the features which are extracted must be sufficiently
+rich that they can reliably distinguish `different' programs,
+whilst not varying too much for `similar' programs.
+
+The feature extractor used in our experiments extracts a
+vast swathe of features to try and quantify each program unit.
+We must now determine how effective these features are at
+distinguishing program units.
+
+A `good' feature is one which best represents the underlying
+structure in the input. Additionally, a `good' feature will
+also show some correlation with the parameters which are
+being predicted. If a feature does not represent the
+underlying structure, then it will not reliably distinguish
+program units. If the feature does not show any correlation
+with the parameters which are being predicted, then the
+feature could be omitted without any loss to the
+effectiveness of the machine learning.
+
+@b{TODO: Link to features extracted}
+
+For a given feature there is no objective measure
+for how representative of the underlying program units
+that feature is. However, we can use the values of each
+feature extracted from the benchmark set to find out how
+that feature is distributed. Assuming that the benchmarks
+contain a representative mixture of program units, we can
+infer that any features whose values are well distributed
+are likely to be good features, and any features which
+take a single constant value, or are tightly clustered
+around a small number of values are likely to be bad.
+
+The experiments we have run only made use of module
+features, as the prediction was done on optimization
+flags controlled at the file level. Therefore, the
+module features are of most interest. Nonetheless, we
+can also analyze function features. We examine the
+features contained in all of the benchmarks used in
+the training set.
+
+The feature extractor extracts @b{TODO} distinct function
+features and @b{TODO} distinct module features. In the
+Mantevo benchmarks that comprise the training data,
+there are @b{TODO} distinct sets of module features, and
+@b{TODO} sets of function features.
+
+Before, looking at any feature distributions in more
+detail, we first disregard those features which only
+ever take a single constant value. For the module
+@b{TODO} features only ever take a single value, and
+for the function features this is the case for
+@b{TODO} of the features. Because these features
+do not appear to distinguish program units, they
+are candidates for removal from the feature extractor.
+
+Of the remaining features, various distributions can
+be seen. We present plots of some seen
+distributions below.
+
+@b{TODO: Number of data points}
+@b{TODO: Plot of features}
+@b{TODO: Plot of all features?}
+
+As well as quantifying the distribution of each
+feature individually, it is also worth looking
+at the features collectively. Whilst each
+feature individually may be well distributed,
+it is also desirable that each feature
+is independent of other features. If a group
+of features are strongly correlated, then they
+could potentially be replaced with a single
+feature with no loss of expressivity.
+
+To discover features which are strongly
+correlated, we can measure the correlation
+coefficient between each pair of features.
+Features with a very high coefficient are
+candidates to be replaced or simplified.
+
+@b{TODO: Graph correlating coefficients between pairs of features}
+@b{TODO: Conclusion about quality of features}
+
+From the above distributions, and correlation
+coefficients we can see there are a large
+number of features which can likely be
+removed from the feature extractor will no
+ill effects. Removing these features mean
+that the feature extractor will be simpler
+and run faster.
+
+@subsubsection Quality of the benchmark set
+
+The benchmark set used for our experiments is a
+subset of the Mantevo benchmarks. This set is
+representative of many of the computational
+kernels used in HPC.
+
+The benchmarks form the bridge between the
+MAGEEC system and real-world codes. They need
+be representative of real-world programs
+whilst also being useable within the MAGEEC
+framework. The Mantevo benchmarks used are
+advantageous as they are based on kernels used
+in real-world programs.
+
+@b{TODO: Ref to 13 dwarves}
+
+There are two main aspects which make up
+a good benchmark set for training. The most
+important aspect is that the benchmarks are
+varied, with a good range of program units
+covering those seen in real-world code. We
+can quantify this by measuring how well
+dispersed the feature sets for each of these
+benchmarks are. If the programs are not
+well spread, then there will be areas of the
+feature space which are under-represented.
+
+The second important aspect is that the
+benchmark is the source of a lot of data
+points. In our case, this means that the
+benchmarks should provide a lot of distinct
+feature sets. Machine learning techniques
+typically require a large amount of data
+to make reliable predictions, so the more
+training data which is available, the better.
+This is especially important for our case,
+as the machine learner is being used to
+control @b{TODO} distinct flags, based on @b{TODO}
+distinct module features.
+
+In order to measure the spread of features
+we can use @b{TODO}
+
+@b{TODO: How to analyse spread of features}
+
+As for the second aspect, a count of the
+number of modules and functions in the
+benchmark set are @b{TODO} and @b{TODO} respectively.
+As we are only working at the module level
+for our experiments this gives us @b{TODO}
+feature sets which can be used for the
+machine learner.
+
+@b{TODO: Conclusion about benchmark set}
+
+@subsubsection Effect of updating the flags
+
+The effect of the flags on the results is also important
+to determine the effectiveness of MAGEEC. In order
+for MAGEEC to be worthwhile, it must be possible to
+find a configuration of flags which performs better than
+-O3, and the configuration of flags must vary depending
+on the specific program unit being compiled.
+
+During combined elimination, each benchmark is compiled
+under a huge range of different configurations. When
+training the C5.0 machine learning, only the `best'
+result for each unique program unit is used when
+training. This means that as a consequence of the
+combined elimination process, we can find the best
+compiler configuration for each set of features in the
+benchmarks, which was then subsequently used to train
+the C5.0 machine learner.
+
+In total, @b{TODO} distinct compiler configurations were
+used in the compilations which were used in the training
+data. Below we provide a graph showing the probability
+of each flag being enabled in this training data.
+
+@b{TODO: Histogram of distribution of flags in ce run}
+
+We can also plot the distribution of the percentage of
+flags for each of the compilations included in the
+training data.
+
+@b{TODO: plot of percentage of enabled flags in ce run}
+@b{TODO: Conclusions about flags}
+
+From the @b{TODO} plot we can see that an average of @b{TODO}% flags
+were enabled.
+@b{TODO: Is this close to a normal distribution}
+
+From the ? plot we can see that a large number of the
+flags are always enabled, or always disabled in the
+best runs used in the training data. However there are
+a lot of flags which do vary between runs. The large
+number of flags which are only sometimes enabled,
+and the large number of unique (???%) flag combinations
+used implies that there is a lot of scope for
+improvement from using custom flag combinations.
+
+@b{TODO: Correlation of flags}
+
+@subsubsection Potential performance benefits
+
+In order to measure the performance of MAGEEC, it is
+necessary to know the range of expected improvement
+which could be acheived. The results data shows the
+improvement over -O3, however it does not provide an
+upper bounds for the improvement that could be
+achieved in the ideal circumstances.
+
+In order to determine an upper bound for performance
+improvements, it would be necessary to search the
+entire space of flags to find the `perfect'
+configuration. This is computationally infeasible.
+However, during the training process we made use of
+the combined elimination process in order to find
+better flag configurations than -O3, and this can
+be used as a rough approximation of the upper
+bound of improvements that can be achieved.
+
+Since combined elimination was only used on the
+benchmarks in the training set, it is not possible
+to determine an upper bound for the improvement
+possible on previously unencountered benchmarks.
+However, we may be able to infer a pattern from
+the data that we have for the training set.
+
+Below we provide a comparison of the -O3 results,
+and the best results encountered during the
+combined elimination process.
+
+@b{TODO: Comparison of -O3 results}
+@b{TODO: Conclusion}
+
+From this, we can see an average upper bound of ???%
+improvement for the benchmarks.
+
+@subsubsection Correlation between features and results
+
+@b{TODO}
+
+@subsubsection Compiler configurations encountered during optimization runs
+
+Our previously analysis has determined that the flags
+used for the best compilations used in the training
+process for the C5.0 classifier varied considerably
+depending on the features of the program unit. This
+signified that the best configuration for a given
+program was not a simple fixed pipeline.
+
+If the framework is working as expected, then during
+the prediction stage a similar variety of flags should
+be encountered, depending on the program unit being
+compiled. If there is a failure in the training
+process or the usage of the C5.0 machine learner, then
+we would see the same configuration, or a small subset
+of configurations being predicted repeatedly.
+
+As with the previous analysis of the flags, we
+provide a histograms of the distribution of flags using
+in the prediction phase, as well as a plot of the percentage
+of enabled flags.
+
+These diagrams are based on the benchmarks and programs
+when tested blind. That is, for each set of predicted
+flags, the program under test was not present in the
+training data.
+
+@b{TODO: Histogram of distribution of flags in opt runs}
+@b{TODO: Plot of percentage of enabled flags in opt runs}
+@b{TODO: Conclusion}
+
+Comparing with the plots of flags used in the training
+set we can see @b{TODO}
+
+@subsubsection Effectiveness of the machine learner
+
+The C5.0 algorithm generates classifier tree which can be
+used to classify a test case into a number of predefined
+classes. For our purposes, a classifier tree is used
+for each parameter (flag), and based on the features
+a parameter is classified into the `true' class, signifying
+that the flag should be enabled, or a `false' class, signifying
+that it should not.
+
+As with all classifiers, there are some problems which
+can occur. One key problem is overfitting or underfitting
+to the training set.
+
+@b{TODO: Decision trees limitations?}
+
+@subsubsection Accuracy of energy measurements on the target system
+
+Outside the control of MAGEEC, but equally important to
+the experiments is the computational environment which the
+tests are running in. Measuring aspects of a program during
+execution is very dependent on the environment which the
+program is running in. This is particularly difficult when
+measuring energy, as there are a large number of factors
+which can affect the energy consumption of a program.
+
+@b{TODO: List of things which may affect energy consumption}
+
+This problem is compounded in our experiments, as the
+combined elimination process is very sensitive to
+minor variations in results. Combined elimination works
+by making small incremental changes to the passes which
+are used during compilation, and then looking for
+matching changes in the result of the compilation. The
+changes in the result are likely to be very small, and
+if they are masked by measurement errors, then it can
+corrupt the search performed by the combination elimination
+process, sending it into the wrong area of the search space.
+The specific effect on combined elimination is that it
+may cause a flag to be unnecessarily ignored, or it
+can cause a flag to be unnecessarily disabled, both
+of which dramatically reduce the effectiveness of the
+process.  Measurement error is liable to cause similar
+problems in other incremental searches.
+
+@b{TODO: More detail}
+@b{TODO: Conclusion}
 
 @section Conclusion
 
-@c TODO
+@b{TODO}
 
 @section Future work
 
-@c TODO
+@b{TODO: Properly investigated issues encountered and increment to improve}
 
 
 @c Features
