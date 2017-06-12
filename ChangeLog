@@ -1,3 +1,10 @@
+2017-06-12  Edward Jones  <ed.jones@embecosm.com>
+
+	* script/combined-elimination.py: Consider a flag as
+	producing an improvement even if it's 1% worse than
+	the current best. This mitigates the effect of measurement
+	error.
+
 2017-05-03  Edward Jones  <ed.jones@embecosm.com>
 
 	* doc/Doxyfile.in: Update doxygen configuration to fix

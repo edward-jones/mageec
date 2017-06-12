@@ -390,7 +390,11 @@ def combined_elimination(src_dir, build_dir, install_dir, build_system,
             if test_res <= 0:
                 print ('-- Test run ' + str(test_run_id) + ' failed. Exiting')
                 return False
-            if test_res < base_res:
+
+            # Consider a flag as being an improvement even if it's up to 1%
+            # worse than the current base result. This is to avoid small
+            # measurement errors from disrupting the process.
+            if test_res < (base_res * 1.01):
                 flags_with_improvement += [(flag, test_res)]
 
         # Starting from the biggest improvement, check if disabling the
