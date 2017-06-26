@@ -8,7 +8,7 @@
 This design document is for MAGEEC.
 This manual is for MAGEEC.
 
-Copyright @copyright{} 2015 Embecosm Limited.
+Copyright @copyright{} 2017 Embecosm Limited.
 @quotation
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -62,6 +62,8 @@ chapter describes some experiments using the project and their
 results. It also evaluates the effectiveness of MAGEEC, the
 potential gains achievable and the shortcomings.
 
+@b{TODO: Innovate reference number}
+
 @node MAGEEC Design
 @chapter MAGEEC Design
 
@@ -75,8 +77,8 @@ the program under compilation.
 Contemporary compilers mostly use a fixed pipeline of passes when
 optimizing code (@ref{fig:ex1}). This pipeline can often be configured by the user, either
 at a high level to specify the overall degree of optimization desired,
-or at a low level to enable or disable specific optimizations, however
-for a given invocation of the compiler the pipeline is for the most
+or at a low level to enable or disable specific optimizations. For a given
+invocation of the compiler the pipeline is for the most
 part fixed. The pass pipelines for common optimization levels (such
 as -O3 in gcc) are balanced to work well with the widest range of
 code, though for a given piece of code the pipeline will not necessarily
@@ -195,7 +197,7 @@ rearrange passes.
 a compiler with the ability to make optimization decisions
 based on statically derived features of an input program. [2]
 
-MAGEEC tries to improve on MILEPOST by providing a more
+MAGEEC aims to improve on MILEPOST by providing a more
 flexible framework to augment compilers with a machine
 learner, as well as also targeting energy as an
 optimization metric.
@@ -261,7 +263,7 @@ which are likely to produce a better performing output executable.
 
 @float Figure,fig:ex3
 @center @image{"images/high-level-gather", 150mm}
-The training process for MAGEEC. An example input file `apple.c' is
+The training process for MAGEEC. An example input module `apple.c' is
 passed through the feature extractor to produce a set of
 features, and the compiler to produce a set of compilations.
 The resultant executable for this compilation is measured to
@@ -274,7 +276,7 @@ blob of training data.
 
 @float Figure,fig:ex4
 @center @image{"images/high-level-predict", 150mm}
-The prediction process for MAGEEC. An example test file `apple.c'
+The prediction process for MAGEEC. An example test module `apple.c'
 is provided to the feature extractor to produce a set of
 features. When `apple.c' is compiled this set of features is
 provided to the machine learner along with the training blob
@@ -349,12 +351,10 @@ Disadvantages of static features:
 @itemize
 @item
 Static features cannot express the effects of the input data on the
-program. Two program can have identical features, but exhibit very
-different performance characteristics depending on the data provided
-to it. Indeed, one program on its own can also exhibit very different
+program. A program can exhibit very different
 performance depending on the data provided to it. This can be mitigated,
 as the features of the program will often hint at the type and patterns
-of data usage, however the problem cannot be fully mitigated.
+of data usage.
 
 @item
 Static features may be less representative of the program's behavior.
@@ -693,7 +693,7 @@ of the program unit was measured.
 created when a machine learner is trained. The
 data in the Result table is used by a machine learner
 in order to generate training data, and this training
-data is then stored as a blob in an entry in the
+data is then stored as a binary blob in an entry in the
 MachineLearner table. Like individual results, each
 entry has an associated metric, and this describes the
 results which were used to train the machine learner.
@@ -731,7 +731,7 @@ is required to make a decision. This binary blob is returned by
 the machine learner and then stored by MAGEEC in the database for
 use later.
 
-When predicting, the blob for the machine learner is retrieved
+When predicting, the binary blob for the machine learner is retrieved
 and an instance of the machine learner is instantiated. The
 user of the machine learner can then query the machine learner
 to make decisions about parameters which the machine learner
@@ -1009,14 +1009,14 @@ The previous chapter described the theory and design of
 MAGEEC. Now we describe an experiment designed to test the
 framework.
 
-@subsection Motivation
+@section Motivation
 
 Current compilers generally optimize for speed, and
-occasionally for size. One of the advantages of the
+occasionally for size. One of the advantages of the MAGEEC
 approach we have proposed is that it makes it possible
 and easy to target any other metric which is quantifiable.
 
-One of the key goals of MAGEEC is to optimize to reduce
+One of the key goals of the TSERO project is to optimize to reduce
 the energy consumption of programs. The current approach
 to optimizing for energy is generally based on the assumption that
 speed and energy usage are closely intertwined, and
@@ -1055,16 +1055,18 @@ same power budget.
 
 @c statistics
 
-@subsection Metrics
+@section Metrics
 
 MAGEEC was designed to be useable with any metric, however
-the aim of the project is to reduce energy consumption
-for HPC application, therefore the energy metric was
+the aim of the TSERO project is to reduce energy consumption
+for HPC applications, therefore the energy metric was
 targeted in experiments.
 
 Energy poses some unique challenges to measure
 accurately, and is harder to achieve than measuring
 program speed.
+
+@b{TODO: Describe ways in which energy can be gathered}
 
 The first barrier when measuring energy is obtaining
 accurate results, as there are many ways in which
@@ -1104,7 +1106,7 @@ to the extend that it is possible to get accurate
 energy measurement results
 @c Quantification of accuracy of energy measurement on HPC
 
-A second difficulty is accurately associating sampled
+Another key difficultly is accurately associating sampled
 results with program units in the input program. The aim
 of optimizing for energy is to reduce the amount of
 energy spent when executing a function in the program.
@@ -1130,7 +1132,9 @@ MAP framework.
 
 @c Quantify accuracy of the energy measurement
 
-@subsubsection Allinea MAP
+@subsection Allinea MAP
+
+@b{TODO: More detail on possible profilers}
 
 Allinea MAP is a profiler for C/C++ and Fortran code.
 It is able to profile OpenMP, MPI and pthreads code
@@ -1139,7 +1143,7 @@ profiling HPC codes. As well as offering a user interface,
 it can also output profiles in various formats
 which can be used by other tools.
 
-@subsection Benchmarks
+@section Training Set
 
 @c segue
 
@@ -1213,7 +1217,7 @@ run on HPC systems.
 In the end, we settled on using a number of benchmarks
 from the Mantevo benchmark set.
 
-@subsubsection Mantevo
+@subsection Mantevo
 
 Mantevo is a set of small benchmarks which contain
 common numerical kernels used in HPC applications [6].
@@ -1266,7 +1270,7 @@ as follows:
 @item TeaLeaf @tab Linear heat conduction equation solver @c cite
 @end multitable
 
-@subsection NEALE
+@section NEALE
 
 The testing of the MAGEEC framework was performed on a system
 called NEALE, a novel cooling demonstrator which is part of the
@@ -1283,14 +1287,15 @@ Centre [7]. The specification of this system are as follows:
 @item Storage @tab 216TB BeeGFS parallel storage
 @end multitable
 
-The system uses the SLURM batch scheduler, and has support
-for profiling through Allinea MAP.
+The system uses the SLURM batch scheduler.
 
 The Ivybridge Xeon is a common processor used in many HPC systems and
-the large number of nodes makes it possible to run a large
-number of benchmark test runs in parallel.
+the large number of nodes makes it possible to run a lot of
+benchmark test runs in parallel. It also has support for Allinea MAP,
+as well as the RAPL counters which are needed for Allinea MAP to capture
+energy usage data.
 
-@subsection Experiment setup
+@section Experiment setup
 
 Here, we describe the setup of our experiment using the MAGEEC
 framework.
@@ -1309,7 +1314,7 @@ There are two phases to the experiment; a training phase
 and a prediction phase. the steps in each of these phases
 is as follows:
 
-@subsubsection Training phase
+@subsection Training phase
 
 During the training phase, the high level steps are as
 follows:
@@ -1558,7 +1563,7 @@ is stored back in the database. This trained
 blob will be retrieved when the machine learner is
 used during the prediction phase.
 
-@subsubsection Prediction phase
+@subsection Prediction phase
 
 After the various databases were trained, they were
 used to try and predict good optimizations for two
@@ -1672,14 +1677,14 @@ The programs used for this were as follows: @b{TODO}
 @c Trained for ...
 @c Optimized for ...
 
-@subsection Results
+@section Results
 
 We now look at the results from the experimental runs performed.
 First we look at the results from the tests against the benchmarks
 in the Mantevo set, and then we look at the results from the
 blind tests of a new HPC code.
 
-@subsubsection Mantevo benchmark results
+@subsection Mantevo benchmark results
 
 Below is a table of the results derived from the Mantevo
 benchmarks, when predicting good optimizations using MAGEEC
@@ -1807,7 +1812,7 @@ of the system are as follows:
 
 We now analyze each of these components in more detail.
 
-@subsubsection Quality of the features
+@subsection Quality of the features
 
 Features are used to quantify some aspect of the input program
 unit. When making predictions, the set of features are the
@@ -1902,7 +1907,7 @@ ill effects. Removing these features mean
 that the feature extractor will be simpler
 and run faster.
 
-@subsubsection Quality of the benchmark set
+@subsection Quality of the benchmark set
 
 The benchmark set used for our experiments is a
 subset of the Mantevo benchmarks. This set is
@@ -1958,7 +1963,7 @@ machine learner.
 
 @b{TODO: Conclusion about benchmark set}
 
-@subsubsection Effect of updating the flags
+@subsection Effect of updating the flags
 
 The effect of the flags on the results is also important
 to determine the effectiveness of MAGEEC. In order
@@ -2006,7 +2011,7 @@ improvement from using custom flag combinations.
 
 @b{TODO: Correlation of flags}
 
-@subsubsection Potential performance benefits
+@subsection Potential performance benefits
 
 In order to measure the performance of MAGEEC, it is
 necessary to know the range of expected improvement
@@ -2042,11 +2047,11 @@ combined elimination process.
 From this, we can see an average upper bound of ???%
 improvement for the benchmarks.
 
-@subsubsection Correlation between features and results
+@subsection Correlation between features and results
 
 @b{TODO}
 
-@subsubsection Compiler configurations encountered during optimization runs
+@subsection Compiler configurations encountered during optimization runs
 
 Our previously analysis has determined that the flags
 used for the best compilations used in the training
@@ -2080,7 +2085,7 @@ training data.
 Comparing with the plots of flags used in the training
 set we can see @b{TODO}
 
-@subsubsection Effectiveness of the machine learner
+@subsection Effectiveness of the machine learner
 
 The C5.0 algorithm generates classifier tree which can be
 used to classify a test case into a number of predefined
@@ -2096,7 +2101,7 @@ to the training set.
 
 @b{TODO: Decision trees limitations?}
 
-@subsubsection Accuracy of energy measurements on the target system
+@subsection Accuracy of energy measurements on the target system
 
 Outside the control of MAGEEC, but equally important to
 the experiments is the computational environment which the
