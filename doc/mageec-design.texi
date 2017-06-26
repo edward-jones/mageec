@@ -36,11 +36,31 @@ The document outlines the design of MAGEEC @emph{MAchine Guided Energy
 Efficient Compilation}.
 
 @menu
+* Introduction::
 * MAGEEC Design::
+* Experiments::
 * References::
 * Glossary::
 * GNU Free Documentation License::
 @end menu
+
+@node Introduction
+@chapter Introduction
+
+This documents the MAGEEC tool, which has been developed as part
+of an Innovate UK project called TSERO, which aims to reduce the
+energy usage in HPC. MAGEEC has been developed as a means to
+reduce the energy consumption of software through intelligent
+optimization in the compiler. Here, we describe the theory and
+design of the MAGEEC framework, as well as experiments run
+using the framework. @b{TODO: Experiments -> Case study}
+
+The overall design of MAGEEC is described in @ref{MAGEEC Design}.
+This chapter goes through the theory of MAGEEC, the components
+which make up the framework, and how it is used. The @ref{Experiments}
+chapter describes some experiments using the project and their
+results. It also evaluates the effectiveness of MAGEEC, the
+potential gains achievable and the shortcomings.
 
 @node MAGEEC Design
 @chapter MAGEEC Design
@@ -53,7 +73,7 @@ on a machine learner trained against statically extracted features of
 the program under compilation.
 
 Contemporary compilers mostly use a fixed pipeline of passes when
-optimizing. This pipeline can often be configured by the user, either
+optimizing (@ref{fig:ex1}). This pipeline can often be configured by the user, either
 at a high level to specify the overall degree of optimization desired,
 or at a low level to enable or disable specific optimizations, however
 for a given invocation of the compiler the pipeline is for the most
@@ -65,7 +85,14 @@ given program or source file, however this is generally a involved
 manual task which requires trial and error, and a lot of iterations
 of compilation.
 
+@float Figure,fig:ex1
 @center @image{"images/current-pass-pipelines", 150mm}
+An example of the pass pipeline in contemporary compilers.
+On the left, a high level optimization option is provided
+to the compiler, resulting in the same `-O3' pass pipeline
+being applied to every input file. On the right, a single
+file is compiled with passes specified by the user.
+@end float
 
 From the perspective of the user, it would be reassuring to know
 that the compiler is not missing optimization opportunities. If the
@@ -121,7 +148,18 @@ Provide a more powerful interface to control tradeoffs
 between different metrics, such as balancing energy and size.
 @end itemize
 
+@xref{fig:ex2} for an example of what a more ideal
+level of control over passes might look like.
+
+@float Figure,fig:ex2
 @center @image{"images/better-pass-pipelines", 150mm}
+A view of what ideal behavior from the compiler might look
+like. Here, the passes run are controlled on a per-function
+basis, allowing the best performance to be achieved.
+
+MAGEEC aims to make this possible, and make the process
+automatic so it does not require user input.
+@end float
 
 @section Other optimization approaches
 
@@ -145,11 +183,12 @@ However there are a few drawbacks. First, it requires a
 project to be built twice which can be cumbersome for larger software
 projects. Second, it requires a long run of the profiled
 program with representative data to produce an accurate
-profile. Finally, current PGO implementations only provide a
-limited amount of information about the program; for example
-in GCC using the -fprofile-generate option will generate
-a profile which stores information about branch probabilities,
-and the values of some expressions in the program [1].
+profile. Finally, current PGO implementations use profiling
+data in passes to optimize block layout and improve inlining
+heuristics (See [1] for information about GCC profiling), but 
+don't use profiling data to make high level decisions such
+as whether to run passes in the first place, or whether to
+rearrange passes.
 
 @item
 @b{MILEPOST} - Much like the aim of MAGEEC, MILEPOST augmented
@@ -161,11 +200,11 @@ flexible framework to augment compilers with a machine
 learner, as well as also targeting energy as an
 optimization metric.
 
-Whereas the MILEPOST project used a custom version of GCC
+Whereas MILEPOST used a custom version of GCC
 4.2, MAGEEC offers a way to interface with multiple
 compilers, including compilers which don't have a plugin
 interface. Equally, MAGEEC provides a way to interface
-with multiple machine learners whereas MILEPOST used a
+with multiple machine learners whereas MILEPOST only uses a
 single machine learner technique called Predictive
 Search Distributions.
 
@@ -175,6 +214,9 @@ Search Distributions.
 @end itemize
 
 @section Terminology
+
+This second describes some terminology used throughout the
+remainder of this document.
 
 @itemize
 @item
@@ -191,7 +233,7 @@ the number of instructions in a basic block.
 @b{Parameter} - A value which can be controlled by some mechanism in the
 compiler to affect the decree or nature of optimization, with the
 effect of changing the object code produced by the program. For example:
-a flag indicating whether the `dead code elimination' pass should be
+a bool indicating whether the `dead code elimination' pass should be
 executed.
 
 @item
@@ -207,17 +249,41 @@ machine learner to make key decisions about the pass to
 run and any tunable parameters which may be set. An
 association is learned between features derived from the
 input source code, and the appropriate parameters to use in
-the compilation to build the executable. Like all machine
-learning processes, there is a training stage; where the
+the compilation to build the executable.
+
+Like all machine
+learning processes, there is a training stage @ref{fig:ex3}; where the
 machine learner is fed features and corresponding `good'
-parameters to build up an association; and a prediction stage;
+parameters to build up an association; and a prediction stage @ref{fig:ex4};
 where the machine learner is used with a new, previously
 unencountered program and used to select a set of parameters
 which are likely to produce a better performing output executable.
 
+@float Figure,fig:ex3
 @center @image{"images/high-level-gather", 150mm}
+The training process for MAGEEC. An example input file `apple.c' is
+passed through the feature extractor to produce a set of
+features, and the compiler to produce a set of compilations.
+The resultant executable for this compilation is measured to
+produce a result.
 
+A group of features, compilations and results is fed
+as input into a machine learner, which uses this to produce a
+blob of training data.
+@end float
+
+@float Figure,fig:ex4
 @center @image{"images/high-level-predict", 150mm}
+The prediction process for MAGEEC. An example test file `apple.c'
+is provided to the feature extractor to produce a set of
+features. When `apple.c' is compiled this set of features is
+provided to the machine learner along with the training blob
+produced during the training stage. The compiler queries
+the machine learner about parameters seen in the compilations
+during the training phase, and the machine learner predicts
+suitable values for these parameters based on its training
+data and the input features.
+@end float
 
 @section Comparison with other compiler tuning approaches
 
@@ -361,12 +427,10 @@ form of the C5.0 classifier and a 1NN machine learner.
 the training and prediction process.
 @end itemize
 
-@center @image{"images/high-level-components", 150mm}
-
 We now describe each of these components in more detail, and
 their current implementations.
 
-@subsection Feature extraction
+@subsection Feature extractor
 
 Feature extraction involves taking an input source program, and
 outputting a set of features for each of the individual
@@ -393,8 +457,6 @@ receive a unique identifier for those features back.
 
 @subsubsection GCC plugin
 
-@center @image{"images/feature-extractor", 150mm}
-
 As well as the interface to the feature extractor, a feature
 extractor plugin is also provided for the GCC compiler. This
 plugin can be provided as a plugin to GCC and used to
@@ -404,6 +466,15 @@ This plugin takes the input program and outputs a .csv file
 identifing an individual program unit in the source code, associating
 it with the unique identifier of the feature set for that
 program unit.
+
+@float Figure,fig:ex5
+@center @image{"images/feature-extractor", 150mm}
+The feature extractor process. This takes an input program and
+extracts features for the constituent program units. The
+sets of features are then added to the database, and a unique
+FeatureSetID is returned. This identifier is then output
+into a .csv file.
+@end float
 
 The benefit of the GCC feature extractor is that it allows feature
 extraction to be performed on C, C++ and Fortran code without
@@ -461,18 +532,38 @@ GCC frontend. This wraps around the gcc, gfortran and g++ drivers
 in order to intercept and control the optimization flags passed
 to those commands.
 
-@center @image{"images/compiler-driver-gather", 150mm}
-
 When training, the driver tracks the optimization flags being used
 with the driver and records a compilation in the database for each
-program unit.
+program unit. @xref{fig:ex6}
 
-@center @image{"images/compiler-driver-predict", 150mm}
+@float Figure,fig:ex6
+@center @image{"images/compiler-driver-gather", 150mm}
+The compiler driver running during the `gather' phase. The
+input program is compiled, and the driver derives a
+set of parameters for each program unit based on the
+optimization flags provided to it. For each program unit
+a compilation is recorded in the database, based on
+the previously extracted features for that program unit,
+as well as the parameters used to build it. A CompilationID
+is returned, which uniquely identifies that compilation
+in the database.
+@end float
 
 When predicting, the driver strips optimization flags and instead
 replaces the flags with flags derived from predictions made by the
-machine learner accessed through MAGEEC. The prediction makes use
-of the features previously extracted for the current module.
+machine learner accessed through MAGEEC. @xref{fig:ex7} The
+prediction makes use of the features previously extracted for the current module.
+
+@float Figure,fig:ex7
+@center @image{"images/compiler-driver-predict", 150mm}
+Compiler driver during the 'predict' phase. Any input
+optimization flags are stripped. Previously extracted
+features of the input program are then used as input to a
+machine learner along with the machine learner's training
+blob stored in the database. A new set of flags is then
+determined by querying the machine learner, and this is
+used to compiler the program unit.
+@end float
 
 Because the GCC wrapper driver works externally to the compiler, it
 does not require any invasive changes to the compiler in order to
@@ -539,7 +630,11 @@ for the added flexibility which it offers.
 Below is a description of the database structure and the
 associated relations.
 
+@float Figure,fig:ex8
 @center @image{"images/database", 150mm}
+Relationship diagram for the MAGEEC SQLite based database
+file format.
+@end float
 
 @itemize
 @item @b{Metadata} - This table stores various metadata
@@ -692,8 +787,8 @@ tools can link against.
 C5.0 is a machine learning which creates a classifier tree based on
 the input features. For MAGEEC, a C5.0 classifier tree is created
 for each decision which may be made (corresponding to a parameter
-in the compilation). The machine learner is provided the best
-result for each distinct set of features, and it uses these
+in the compilation) @xref{fig:ex9}. The machine learner is provided
+the best result for each distinct set of features, and it uses these
 to build a classification tree for each parameter. The classification
 tree for each of the parameters are concatenated together and
 stored in the blob.
@@ -704,7 +799,12 @@ the classification for that decision. For a boolean decision, the
 resulting decision could be `true', `false', or `native' if the
 machine learner is not able to make a decision.
 
+@float Figure,fig:ex9
 @center @image{"images/c50", 150mm}
+An example of decisions trees determining whether a pass should
+be classified as `on' (true) or `off' (false), based on the
+module or function features for the program unit.
+@end float
 
 Advantages of C5.0 are that the interface is straightforward
 and the decision trees are human readable.
@@ -718,9 +818,15 @@ is associated with a parameter set, which is the parameter set for
 the best result for that feature set in the results data. When a
 decision needs to be made, the closest feature set to the input
 set is found in the training data, and the decision is made based
-on the parameters in that closest point.
+on the parameters in that closest point. @xref{fig:ex10}
 
+@float Figure,fig:ex10
 @center @image{"images/1nn", 150mm}
+Example of 1-NN as a machine learner method. The features for
+a program unit defines the position of the point in feature
+space, and each point has an associated set of parameters
+corresponding to the best configuration for that feature set.
+@end float
 
 @subsection Tooling
 
@@ -773,6 +879,12 @@ with MAGEEC can be embedded into other compilers. This could
 be used to perform feature extraction from within another
 compiler, or to allow MAGEEC to alter the internal pass
 sequences in a compiler.
+
+@float Figure,fig:ex11
+@center @image{"images/high-level-components", 150mm}
+High level components of MAGEEC, and how they interact
+with the MAGEEc library.
+@end float
 
 @section Workflow
 
@@ -891,9 +1003,10 @@ The result of this process should be a binary which is more
 optimal than the binary which would have been produced using
 the standard optimization options.
 
-@section Experimentation
+@node Experiments
+@chapter Experiments
 
-The previous sections have described the theory and design of
+The previous chapter described the theory and design of
 MAGEEC. Now we describe an experiment designed to test the
 framework.
 
@@ -1574,7 +1687,10 @@ benchmarks, when predicting good optimizations using MAGEEC
 (through the GCC wrapper driver) along with the various
 trained databases.
 
+@float Figure,fig:ex12
 @center @image{"results-table", 150mm}
+Mantevo benchmark results
+@end float
 
 There is a separate row for each benchmark which was
 optimized, and a separate column for each of the
@@ -1640,9 +1756,15 @@ training sets, so all of their values are highlighted.
 Also note a couple of entries where the value is `0',
 signifying no data was derived at that point.
 
+@float Figure,fig:ex13
 @center @image{"results-bar-graph-1", 150mm}
+@b{TODO: Link to diagram}
+@end float
 
+@float Figure,fig:ex14
 @center @image{"results-bar-graph-2", 150mm}
+@b{TODO: Link to diagram}
+@end float
 
 @b{TODO: Improvements over -O3}
 
