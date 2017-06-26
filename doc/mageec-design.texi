@@ -68,18 +68,18 @@ potential gains achievable and the shortcomings.
 @section Overview
 
 MAGEEC is a set of components to augment a compiler with the ability
-to make intelligent predictions about which optimizations to run based
-on a machine learner trained against statically extracted features of
+to make intelligent predictions about which optimizations. To do this
+it uses a machine learner trained against statically extracted features of
 the program under compilation.
 
 Contemporary compilers mostly use a fixed pipeline of passes when
-optimizing (@ref{fig:ex1}). This pipeline can often be configured by the user, either
+optimizing code (@ref{fig:ex1}). This pipeline can often be configured by the user, either
 at a high level to specify the overall degree of optimization desired,
 or at a low level to enable or disable specific optimizations, however
 for a given invocation of the compiler the pipeline is for the most
 part fixed. The pass pipelines for common optimization levels (such
 as -O3 in gcc) are balanced to work well with the widest range of
-code, however for a given piece of code the passes will not necessarily
+code, though for a given piece of code the pipeline will not necessarily
 be optimal. In many compilers the user may tune the pipeline for a
 given program or source file, however this is generally a involved
 manual task which requires trial and error, and a lot of iterations
@@ -105,29 +105,29 @@ From the perspective of the compiler writer, it would be beneficial
 to avoid the laborious task of tuning the pass pipeline for each new
 processor and CPU. For a given architecture, there can exist a vast
 array of CPUs which vary in the hardware features supported and
-the intricacies of their microarchitecture. For example, for the
-AArch64 backend of LLVM, there are currently 15 different CPUs
-which can be targeted, differing in the set of supported features
+the intricacies of their microarchitecture. For example, in the
+AArch64 backend for LLVM, there are currently 15 different CPUs
+which can be targeted, each differing in the set of supported features
 and the scheduling model. For each CPU it is necessary to optimize
 the compiler to target it, and automatically optimizing the pass
 pipeline is a way in which extra performance may be extracted for
 a given core with minimal input from the compiler writer.
 
-A further point of interest is that most compilers currently
-optimize for speed, and give less attention to code size, energy,
-or any other interesting metrics. In general optimization can only
+A further point of interest is that most compilers primarily focus on
+optimizing for speed, and give less attention to code size, energy,
+or other interesting metrics. In general optimization can only
 be done with one goal (typically speed or code size) and it is not
 possible to express more complex optimizations goals such as
 optimizing for energy and code size at the same time, or
 optimizing for speed whilst keeping compile time to a minimum.
 
 If selecting the best compiler configuration can be automated,
-then there are several potential benefits which may be realized:
+there are several potential benefits which may be realized:
   
 @itemize
 @item
 Remove complexity from the compiler to tune optimization
-pipelines for different ISAs, microarchitectures, CPU features
+pipelines for different microarchitectures, CPU features
 sets, and metrics.
 
 @item
@@ -135,7 +135,7 @@ Provide the user a more straightforward interface, as well
 as better performing programs.
 
 @item
-Control optimizations at a finer granularity (file, module) to
+Control optimizations at a finer granularity (function, module) to
 realize performance improvements which cannot be realized in current
 compilers (which can only control the pass pipeline at a
 per-invocation level).
@@ -306,11 +306,11 @@ parameters after each build. Compared these approaches,
 our approach based on a predictive model using static features
 has some advantages and disadvantages:
 
-Advantages:
+Advantages of static features:
 @itemize
 @item
 To derive static features, test programs do not have to be recompiled to
-receive a benefit. Interactive compilation techniques such as combined
+receive a benefit. Iterative compilation techniques such as combined
 elimination require a large number of recompilation runs, and even just
 doing a single profiled run to derived dynamic features can be
 prohibitively difficult if the program is large or cannot easily be
@@ -322,7 +322,7 @@ Dynamic features may not be precisely measureable, may depend on the
 environment, or require a more complex build stage.
 
 @item
-Measuring static features is fast. The effect on compilation time can
+Measuring static features is fast. The effect on compile time can
 be minimized as static features can be very easily derived from the
 source code or intermediate representation. This makes deployment
 far easier.
@@ -345,7 +345,7 @@ quantify the behavior of the program. Producing this data may
 be a non-trivial task itself.
 @end itemize
 
-Disadvantages:
+Disadvantages of static features:
 @itemize
 @item
 Static features cannot express the effects of the input data on the
@@ -359,7 +359,7 @@ of data usage, however the problem cannot be fully mitigated.
 @item
 Static features may be less representative of the program's behavior.
 For example a program may contain a lot of code which is only executed in
-exceptional circumstances. If dynamic features or interative
+exceptional circumstances. If dynamic features or iterative
 compilation is used, then these cold code paths may never be exercised,
 and therefore won't bias the features. If static features
 are used, then these cold paths will be equally represented in the
@@ -380,10 +380,6 @@ decision to be made at a finer granularity than program or module
 level.
 
 @c Diagram of internal/external MAGEEC control
-
-MAGEEC is open source under the GPL license. The aim is that by doing
-this MAGEEC can be freely implemented in as wide range of compilers as
-possible.
 
 @c @section Comparison with original MAGEEC project
 @c
@@ -427,17 +423,16 @@ form of the C5.0 classifier and a 1NN machine learner.
 the training and prediction process.
 @end itemize
 
-We now describe each of these components in more detail, and
-their current implementations.
+Each of these components will now be described in more detail.
 
 @subsection Feature extractor
 
 Feature extraction involves taking an input source program, and
 outputting a set of features for each of the individual
 units of the program. Each source file can produce
-multiple sets of features for each different program unit in 
-the file. So the module will produce a feature set, and each
-function will produce its own feature set. It is even feasible
+multiple sets of features for each different program unit with
+this abstraction. For example the module will produce a feature
+set, and each function will produce its own feature set. It is even feasible
 that feature could be generated for each basic block or loop.
 
 @subsubsection Interface
@@ -445,10 +440,10 @@ that feature could be generated for each basic block or loop.
 MAGEEC provides an interface to create a set of features. How
 exactly the features are extracted is up to the program doing the
 feature extraction, and the features which are extracted is also
-at the whim of the feature extractor. The limitations placed by
-MAGEEC are that the type of the features must be one of a set of
+specific to the feature extractor. The limitations for this
+enforced by MAGEEC are that the type of the features must be one of a set of
 known types, which is a set of types which is common with the types
-which the machine learners can handle, and a given extracted feature
+which the machine learners can handle, and that a given extracted feature
 is consistently identified by a numerical identifier.
 
 The interface to MAGEEC allows a feature extractor to insert a
@@ -478,16 +473,15 @@ into a .csv file.
 
 The benefit of the GCC feature extractor is that it allows feature
 extraction to be performed on C, C++ and Fortran code without
-requiring a compiler-specific feature extractor to be written.
+requiring a language-specific feature extractor to be written.
 Provided code can be built with GCC, feature extraction can be
 achieved. This makes it ideal for use alongside a proprietary
 compiler which cannot be augmented with feature extraction itself.
 
 The feature extractor extracts different sets of features
 depending on whether a function or a module is the program unit
-under compilation. The features extracted for modules are for
-the most part just aggregated values based on the values for
-each function in that module.
+under compilation. The majority of the features extracted for modules
+are aggregated values based on the values for each function in that module.
 
 @xref{GCC plugin features}
 
@@ -504,25 +498,26 @@ compilation parameters.
 
 @subsubsection Driver interface
 
-MAGEEC offers an interface, which allows the compiler, or a wrapper
-controlling the compiler to store a record of each program unit
+MAGEEC offers an interface which allows the compiler, or a wrapper
+controlling the compiler, to store a record of each program unit
 being compiled, the features associated with that program unit, and
 parameters describing the configuration of the compiler for that
-compilation. The interface takes all of the information describing
+compilation. The interface combines all of the information describing
 the compilation of a program unit; the features and parameters
 involved in the compilation, and returns a unique identifier for
-that compilation. Later, results will be associated with this
-compilation and the features, parameters and results used in a
-given compilation will be used as a data point as input to training
+that compilation. Later, the program will be measured to produce
+a result value and this result value will be associated with the
+compilation. The compilation and its associated features, parameters
+and result will form a data point in the input to train
 the machine learner.
 
 For prediction, an interface is also offered which allows the driver
 to use a previously trained machine learner to make decisions about
 parameters. The driver can query a machine learner with a set of
 features as well as a parameter to make a decision about. It then
-receives a decision which it can use to inform its choice about
-the value the parameter should take for the compilation of a 
-program unit.
+receives a decision from the machine learner dictating the
+value which the parameter should take when compiling a program
+with the provided features.
 
 @subsection GCC wrapper driver
 
@@ -551,8 +546,9 @@ in the database.
 
 When predicting, the driver strips optimization flags and instead
 replaces the flags with flags derived from predictions made by the
-machine learner accessed through MAGEEC. @xref{fig:ex7} The
-prediction makes use of the features previously extracted for the current module.
+machine learner accessed through MAGEEC. @xref{fig:ex7}. The
+prediction makes use of the features for the current module
+previously extracted and provided to the driver.
 
 @float Figure,fig:ex7
 @center @image{"images/compiler-driver-predict", 150mm}
@@ -573,16 +569,19 @@ Additionally because it uses the public documented interface to the
 compiler, it is more stable as it should not be able to create
 an invalid set of passes.
 
-A disadvantage of the GCC driver is that it is only able to make decisions on
-a per-module level. If the driver instead operated internally to GCC it could
-be possible to enable or disable passes on a per function basis. This
-severely limits the optimization potential.
+One disadvantage of the GCC driver is that it is only able to
+make decisions on a per-module level. If the driver instead
+operated internally to GCC it could be possible to enable or
+disable passes on a per function basis. A further limitation
+is that it is only possible to control compilation parameters
+which are exposed through the driver. This severely limits
+its optimization potential.
 
 @c more detail on this bit
 
 @c Flags vs internal pass decisions
 
-@subsection MAGEEC file format
+@subsection File Format
 
 Internally MAGEEC uses an SQLite database as an intermediate format.
 This MAGEEC database is the main file format, and is used to record
