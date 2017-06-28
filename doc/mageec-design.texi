@@ -70,7 +70,7 @@ potential gains achievable and the shortcomings.
 @section Overview
 
 MAGEEC is a set of components to augment a compiler with the ability
-to make intelligent predictions about which optimizations. To do this
+to make intelligent predictions about which optimizations to run. To do this
 it uses a machine learner trained against statically extracted features of
 the program under compilation.
 
@@ -83,7 +83,7 @@ part fixed. The pass pipelines for common optimization levels (such
 as -O3 in gcc) are balanced to work well with the widest range of
 code, though for a given piece of code the pipeline will not necessarily
 be optimal. In many compilers the user may tune the pipeline for a
-given program or source file, however this is generally a involved
+given program or source file, however this is generally an involved
 manual task which requires trial and error, and a lot of iterations
 of compilation.
 
@@ -314,7 +314,7 @@ Advantages of static features:
 To derive static features, test programs do not have to be recompiled to
 receive a benefit. Iterative compilation techniques such as combined
 elimination require a large number of recompilation runs, and even just
-doing a single profiled run to derived dynamic features can be
+doing a single profiled run to derive dynamic features can be
 prohibitively difficult if the program is large or cannot easily be
 instrumented.
 
@@ -336,12 +336,12 @@ or storage for the overhead of intrumentation.
 
 @item
 Instrumentation of the program in order to measure dynamic features
-of the program can affect the behavior of the program, and can
-affecting the measurement of those features. Static features do not
+can affect the behavior of the program, and can
+affect the measurement of those features. Static features do not
 alter the program under measurement in any way.
 
 @item
-If dynamic features are measured, then and large amount of
+If dynamic features are measured, then a large amount of
 representative input needs to be used in order to accurately
 quantify the behavior of the program. Producing this data may
 be a non-trivial task itself.
@@ -419,7 +419,7 @@ In addition to this, basic machine learners are provided in the
 form of the C5.0 classifier and a 1NN machine learner.
 
 @item
-@b{Tooling} - Tools and scripts to access the file, and drive
+@b{Tooling} - Tools and scripts to access files, and drive
 the training and prediction process.
 @end itemize
 
@@ -444,18 +444,20 @@ specific to the feature extractor. The limitations for this
 enforced by MAGEEC are that the type of the features must be one of a set of
 known types, which is a set of types which is common with the types
 which the machine learners can handle, and that a given extracted feature
-is consistently identified by a numerical identifier.
+is consistently identified by a unique numerical identifier.
 
 The interface to MAGEEC allows a feature extractor to insert a
 new set of features into the file for a program unit, and
-receive a unique identifier for those features back.
+receive a unique identifier for the instance of that set of
+features.
 
 @subsubsection GCC plugin
 
 As well as the interface to the feature extractor, a feature
-extractor plugin is also provided for the GCC compiler. This
-plugin can be provided as a plugin to GCC and used to
-extract module and function features from the program.
+extractor plugin implementing the interface is also provided
+for the GCC compiler. This plugin can be provided as a plugin
+to GCC and used to extract module and function features from
+input programs.
 
 This plugin takes the input program and outputs a .csv file
 identifing an individual program unit in the source code, associating
@@ -552,22 +554,23 @@ previously extracted and provided to the driver.
 
 @float Figure,fig:ex7
 @center @image{"images/compiler-driver-predict", 150mm}
-Compiler driver during the 'predict' phase. Any input
+Compiler driver during the `predict' phase. Any input
 optimization flags are stripped. Previously extracted
 features of the input program are then used as input to a
 machine learner along with the machine learner's training
 blob stored in the database. A new set of flags is then
 determined by querying the machine learner, and this is
-used to compiler the program unit.
+used to compile the given program unit.
 @end float
 
 Because the GCC wrapper driver works externally to the compiler, it
 does not require any invasive changes to the compiler in order to
 control the passes. It also supports multiple version of GCC easily
 and can support Fortran and C++ code through the same driver.
-Additionally because it uses the public documented interface to the
-compiler, it is more stable as it should not be able to create
-an invalid set of passes.
+Additionally because it uses the public, documented command-line interface to the
+compiler, it is more stable as it should not be possible to
+create an invalid combination of passes uses the optimization
+flags.
 
 One disadvantage of the GCC driver is that it is only able to
 make decisions on a per-module level. If the driver instead
@@ -795,7 +798,7 @@ stored in the blob.
 When a decision must be made, the appropriate classifier tree is
 found, and the features for the program unit are used to determine
 the classification for that decision. For a boolean decision, the
-resulting decision could be `true', `false', or `native' if the
+resulting decision could be `true' or `false', or `native' if the
 machine learner is not able to make a decision.
 
 @float Figure,fig:ex9
@@ -844,7 +847,7 @@ command line tool.
 
 This script exists to build and feature extract a program using the
 GCC feature extractor plugin. It simplifies the interface to the
-plugin, and abstracts away building of projects with autoconf and
+plugin, and simplifies building projects with the autoconf and
 CMake build systems.
 
 @subsubsection Combined elimination script
@@ -882,13 +885,13 @@ sequences in a compiler.
 @float Figure,fig:ex11
 @center @image{"images/high-level-components", 150mm}
 High level components of MAGEEC, and how they interact
-with the MAGEEc library.
+with the MAGEEC library.
 @end float
 
 @section Workflow
 
 There are two phases to using MAGEEC. Gathering and training a
-machine learner, and predict optimizations for a program based
+machine learner, and predicting paramters for a program based
 on a trained machine learner.
 
 @subsection Gathering and training
@@ -960,7 +963,7 @@ of only finding a local minima, rather than a global minima, and
 this is true of combined elimination too. Provided the local
 minima is still an improvement over the default compilation
 optimizations this is not a major concern, and is a trade-off
-working making in order to reduce the search time.
+worth making in order to reduce the search time.
 
 Aside from the process used to guide the search, another
 important component is the set of benchmarks which are used.
@@ -1038,9 +1041,9 @@ also allow for new technology to be made viable. For example
 a reduction in energy consumption used by a processor may
 mean that it is viable to power it using solar energy.
 
-@c First reference to the 'original MAGEEC project'
+@c First reference to the `original MAGEEC project'
 The original MAGEEC project looked at reducing energy
-consumption in embedded systems. This project has built on
+consumption in embedded systems. This project builds on
 this work and aims to demonstrate that this is also
 applicable to high performance computing applications. HPC
 systems are used extensively for research, where
@@ -1096,14 +1099,14 @@ an inaccurate profile of the program energy usage.
 @end itemize
 
 Some of these problems can be mitigated. For example on
-many systems it may be possible to clock the clock
+many systems it may be possible to lock the clock
 speed of processor cores. Equally, it is possible to
 minimize the number of other processes running on
 many systems to reduce interruption caused by the
 sharing of resources. Indeed on HPC systems the
 environment in which a program is run can be controlled
 to the extend that it is possible to get accurate
-energy measurement results
+energy measurement results.
 @c Quantification of accuracy of energy measurement on HPC
 
 Another key difficultly is accurately associating sampled
@@ -1119,7 +1122,7 @@ to obtain the average amount of energy per function
 invocation we must take the total and divide it by the
 number of calls to that function. This then gives us
 an estimate for the average energy used during each
-invocation of the function.
+invocation.
 
 @c Describe per function energy measurement better
 
@@ -1148,19 +1151,19 @@ which can be used by other tools.
 @c segue
 
 For use when training, there are some desirable properties
-which should be covered by the benchmark:
+which should be covered by the training set:
 
 @itemize
 @item
-The benchmark needs to containg a large number of program
-units. This means that the benchmark should containing a
+The training set needs to contain a large number of program
+units. This means that it should contain a
 lot of modules and functions. Each module and function
 will provide a single distinct feature set, and the number
 of feature sets needs to be maximized in order to improve
 the quality of any training.
 
 @item
-The benchmark should be straightforward to build. It
+The training programs should be straightforward to build. It
 needs to be possible to pass flags to the compiler in
 order to control the compile options, and
 this requires the build system to not get in the way.
@@ -1192,7 +1195,7 @@ be inaccurate, if it runs for too long then it will
 increase the time to gather results considerably.
 
 @item
-Representaive code for the target system.
+Representative code for the target system.
 
 @item 
 Minimal external dependencies. Any time or energy
@@ -1223,6 +1226,8 @@ Mantevo is a set of small benchmarks which contain
 common numerical kernels used in HPC applications [6].
 They have minimal external dependencies and the applications
 are build with simple Makefiles.
+
+@b{TODO: Description of the 7 dwarves}
 
 The benefits of using Mantevo are:
 @itemize
@@ -1394,7 +1399,7 @@ Each test run generated by combined elimination is
 run single-threaded on a single node of the NEALE
 machine. This allows multiple test runs and multiple
 benchmark runs to be done in parallel without interfering
-with each other substantially, and speeds up the data
+with each other and speeds up the data
 gathering process substantially. Only some stages of
 the combined elimination process can be parallelized,
 but running in parallel where possible cuts down the
@@ -1446,7 +1451,7 @@ features of program units and the set of flags used
 to compile the program unit, with the resultant
 enegy measurement for that program unit.
 
-THe program units which were under compilation
+The program units which were under compilation
 were the functions and modules which appeared in the
 source for each benchmark. Therefore, a meaningful
 energy measurement value must be extracted from the
@@ -1533,7 +1538,7 @@ some tests against the input training set.
 In the end, eight seperate aggregated databases
 were created. One containing results for all of
 the benchmarks, and then seven containing
-results for all of the benchmarks except one. This
+results for all of the benchmarks except one. These
 databases are then ready to be trained.
 
 @subsubheading Training using C5.0
@@ -1794,7 +1799,7 @@ we need to analyse the behavior of various aspects
 of the process which could effect the performance
 of the system. Any shortcomings in these areas
 could be detrimental to the performance of the
-system.
+system as a whole.
 
 The important aspects which affect the performance
 of the system are as follows:
