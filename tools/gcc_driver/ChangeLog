@@ -1,3 +1,18 @@
+2017-06-28  Edward Jones  <ed.jones@embecosm.com>
+
+	* Driver.cpp: Previously, only the flags available
+	in GCC version 4.8.5 could be handled, and this has now
+	been extended so that all flags can be handled. This is
+	achieved by querying the GCC version to find out the
+	flags which are available.
+
+	Don't hardcode in the flags enabled by different -O
+	optimization levels. Instead, require the user to
+	use the same -O level at all stages, and just record
+	the flags used.
+	* Parameters.h: Allow extra flags to be used as
+	parameters.
+
 2017-05-30  Edward Jones  <ed.jones@embecosm.com>
 
 	* Driver.cpp (DriverMode): Rename kOptimize to kPredict.

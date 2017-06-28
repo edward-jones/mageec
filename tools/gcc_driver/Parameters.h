@@ -34,10 +34,9 @@ enum {
 namespace FlagParameterID {
 enum : unsigned {
   kFIRST_FLAG_PARAMETER        = kFlagParameterBegin,
-  //                                 // -faggressive-loop-optimizations
-  //kAggressiveLoopOptimizations = kFIRST_FLAG_PARAMETER,
-                                   // -falign-functions
-  kAlignFunctions = kFIRST_FLAG_PARAMETER,
+                                   // -faggressive-loop-optimizations
+  kAggressiveLoopOptimizations = kFIRST_FLAG_PARAMETER,
+  kAlignFunctions,                 // -falign-functions
   kAlignJumps,                     // -falign-jumps
   kAlignLabels,                    // -falign-labels
   kAlignLoops,                     // -falign-loops
@@ -55,7 +54,7 @@ enum : unsigned {
   kDCE,                            // -fdce
   kDeferPop,                       // -fdefer-pop
   kDeleteNullPointerChecks,        // -fdelete-null-pointer-checks
-  //kDevirtualize,                   // -fdevirtualize
+  kDevirtualize,                   // -fdevirtualize
   kDSE,                            // -fdse
   kEarlyInlining,                  // -fearly-inlining
   kExpensiveOptimizations,         // -fexpensive-optimizations
@@ -66,7 +65,7 @@ enum : unsigned {
   kGCSELM,                         // -fgcse-lm
   kGCSESM,                         // -fgcse-sm
   kGuessBranchProbability,         // -fguess-branch-probability
-  //kHoistAdjacentLoads,             // -fhoist-adjacent-loads
+  kHoistAdjacentLoads,             // -fhoist-adjacent-loads
   kIfConversion,                   // -fif-conversion
   kIfConversion2,                  // -fif-conversion2
   kInline,                         // -finline
@@ -88,7 +87,7 @@ enum : unsigned {
   kMoveLoopInvariants,             // -fmove-loop-invariants
   kOmitFramePointer,               // -fomit-frame-pointer
   kOptimizeSiblingCalls,           // -foptimize-sibling-calls
-  //kOptimizeStrLen,                 // -foptimize-strlen
+  kOptimizeStrLen,                 // -foptimize-strlen
   kPeephole,                       // -fpeephole
   kPeephole2,                      // -fpeephole2
   kPredictiveCommoning,            // -fpredictive-commoning
@@ -113,7 +112,7 @@ enum : unsigned {
   kSchedStalledInsnsDep,           // -fsched-stalled-insns-dep
   kScheduleInsns,                  // -fschedule-insns
   kScheduleInsns2,                 // -fschedule-insns2
-  //kSectionAnchors,                 // -fsection-anchors
+  kSectionAnchors,                 // -fsection-anchors
   kSelSchedPipelining,             // -fsel-sched-pipelining
   kSelSchedPipeliningOuterLoops,   // -fsel-sched-pipelining-outer-loops
   kSelSchedReschedulePipelined,    // -fsel-sched-reschedule-pipelined
@@ -128,7 +127,7 @@ enum : unsigned {
   kTreeBuiltinCallDCE,             // -ftree-builtin-call-dce
   kTreeCCP,                        // -ftree-ccp
   kTreeCH,                         // -ftree-ch
-  //kTreeCoalesceInlinedVars,        // -ftree-coalesce-inlined-vars
+  kTreeCoalesceInlinedVars,        // -ftree-coalesce-inlined-vars
   kTreeCoalesceVars,               // -ftree-coalesce-vars
   kTreeCopyProp,                   // -ftree-copy-prop
   kTreeCopyRename,                 // -ftree-copyrename
@@ -138,13 +137,13 @@ enum : unsigned {
   kTreeDSE,                        // -ftree-dse
   kTreeForwProp,                   // -ftree-forwprop
   kTreeFRE,                        // -ftree-fre
-  //kTreeLoopDistributePatterns,     // -ftree-loop-distribute-patterns
+  kTreeLoopDistributePatterns,     // -ftree-loop-distribute-patterns
   kTreeLoopDistribution,           // -ftree-loop-distribution
   kTreeLoopIfConvert,              // -ftree-loop-if-convert
   kTreeLoopIM,                     // -ftree-loop-im
   kTreeLoopIVCanon,                // -ftree-loop-ivcanon
   kTreeLoopOptimize,               // -ftree-loop-optimize
-  //kTreePartialPre,                 // -ftree-partial-pre
+  kTreePartialPre,                 // -ftree-partial-pre
   kTreePhiProp,                    // -ftree-phiprop
   kTreePre,                        // -ftree-pre
   kTreePTA,                        // -ftree-pta
@@ -155,7 +154,7 @@ enum : unsigned {
   kTreeSLSR,                       // -ftree-slsr
   kTreeSRA,                        // -ftree-sra
   kTreeSwitchConversion,           // -ftree-switch-conversion
-  //kTreeTailMerge,                  // -ftree-tail-merge
+  kTreeTailMerge,                  // -ftree-tail-merge
   kTreeTER,                        // -ftree-ter
   kTreeVectLoopVersion,            // -ftree-vect-loop-version
   kTreeVectorize,                  // -ftree-vectorize
