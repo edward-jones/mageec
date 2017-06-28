@@ -1,3 +1,32 @@
+2017-06-28  Edward Jones  <ed.jones@embecosm.com>
+
+	* script/build-autoconf.py: Added script to build a
+	benchmark using the autoconf build system.
+	* script/build-cmake.py: Added script to build
+	a benchmark using CMake.
+	* script/combined-elimination.py: Refactor script to
+	make it work with multiple GCC versions, as well as
+	the updated interface to the build scripts and
+	measure scripts. Update the combined elimination
+	process itself to be resilient to measurement
+	errors, and to avoid doing unnececessary extra
+	test runs.
+	* script/feature-extract.py: Refactor script and update
+	interfaces.
+	* script/generate-builds.py: Remove unused script.
+	* script/mageec.py (eprint): Add function to print
+	to stderr instead of stdout.
+	(build): Update interface, remove special handling
+	for autoconf and cmake as building using these
+	build systems can now be achieved by using the
+	build-autoconf.py and build-cmake.py scripts.
+	(feature_extract): Update interface and refactor.
+	* script/measure-code-size.py: Refactor and update
+	to use new interface for measure scripts. Measure
+	scripts now output their result on stdout. The
+	script is also provided an executable to measure,
+	rather than a path to search for executables.
+
 2017-06-12  Edward Jones  <ed.jones@embecosm.com>
 
 	* script/combined-elimination.py: Consider a flag as
