@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-add_library(c5_machine_learner
+add_library(c5_machine_learner SHARED
   attwinnow.c
   c50.c
   c50main.c

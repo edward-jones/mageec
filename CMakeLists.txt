@@ -94,7 +94,7 @@ include_directories(include)
 
 
 # MAGEEC library
-add_library (mageec_core
+add_library (mageec_core SHARED
   lib/Database.cpp
   lib/Framework.cpp
   lib/SQLQuery.cpp
@@ -109,7 +109,7 @@ target_link_libraries(mageec_core sqlite3)
 add_subdirectory(lib/ML/C5)
 set (ML_SOURCES "lib/ML/C5.cpp" "lib/ML/1NN.cpp")
 
-add_library (mageec_ml ${ML_SOURCES})
+add_library (mageec_ml SHARED ${ML_SOURCES})
 target_link_libraries(mageec_ml mageec_core c5_machine_learner)
 
 # Standalone tool executable
