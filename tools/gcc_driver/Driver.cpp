@@ -544,15 +544,19 @@ int main(int argc, const char *argv[]) {
   size_t idx = 0;
   int major = std::stoi(version_str, &idx);
   assert(version_str[idx] == '.');
-  idx++;
-  int minor = std::stoi(version_str.substr(idx), &idx);
+  version_str = version_str.substr(idx+1);
+
+  int minor = std::stoi(version_str, &idx);
   assert(version_str[idx] == '.');
-  idx++;
-  int patch = std::stoi(version_str.substr(idx), &idx);
-  unsigned gcc_version = (major * 10000) + (minor + 100) + patch;
+  version_str = version_str.substr(idx+1);
+
+  int patch = std::stoi(version_str, &idx);
+  unsigned gcc_version = (major * 10000) + (minor * 100) + patch;
 
   if (gcc_version < 40500) {
-    MAGEEC_ERR("GCC version '" + version_str + "' (>= 4.5.0 is required)");
+    MAGEEC_ERR("GCC version '" + std::to_string(major) + "."
+                               + std::to_string(minor) + "."
+                               + std::to_string(patch) + "' (>= 4.5.0 is required)");
     return -1;
   }
 
