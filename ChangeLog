@@ -1,3 +1,9 @@
+2017-08-23  Edward Jones  <ed.jones@embecosm.com>
+
+	* script/combined-elimination.py: Fix bug causing some
+	flags to be unnecessarily ignored. Add extra diagnostic
+	messages.
+
 2017-06-28  Edward Jones  <ed.jones@embecosm.com>
 
 	* script/build-autoconf.py: Added script to build a

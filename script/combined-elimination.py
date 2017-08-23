@@ -328,6 +328,7 @@ def combined_elimination(src_dir, run_dir, cc, cxx, fort,
     if curr_result <= 0:
         eprint ('-- Failed initial test run')
         return False
+    print ('CE: (best) id: ' + str(run_id) + ' result: ' + str(curr_result) + ' flags: ' + ' '.join(curr_flags))
     run_id += 1
 
     finished = False
@@ -359,8 +360,8 @@ def combined_elimination(src_dir, run_dir, cc, cxx, fort,
                                               [build_flags, base_opt] + run_flags,
                                               [exec_flags],
                                               debug))
-            run_id += 1
             test_runs.append((run_proc, run_id, test_flag))
+            run_id += 1
 
         # Wait for all of the test runs to complete, and then get their results
         for run_proc, _, _ in test_runs:
@@ -370,11 +371,12 @@ def combined_elimination(src_dir, run_dir, cc, cxx, fort,
             if run_result <= 0:
                 eprint ('-- Ignoring failed test run ' + str(test_run_id))
                 continue
+            print ('CE: (test) id: ' + str(test_run_id) + ' result: ' + str(run_result) + ' flag: ' + test_flag)
             # Consider a flag as being an improvement even if it's up to 1%
             # worse than the current base result. This avoids small
             # measurement errors from disrupting the process.
             if run_result < (curr_result * 1.01):
-                flags_with_improvement.append((test_flag, run_result))
+                flags_with_improvement.append((test_flag, test_run_id, run_result))
 
         # Starting from the flag which had the biggest improvement, check
         # if disabling the flag still gives a better result. If it does, then
@@ -383,23 +385,25 @@ def combined_elimination(src_dir, run_dir, cc, cxx, fort,
         #
         # The first flag is guaranteed to give an improvement, so we don't
         # need to re-run the test
-        flags_with_improvement = sorted(flags_with_improvement, key=lambda x: x[1])
+        flags_with_improvement = sorted(flags_with_improvement, key=lambda x: x[2])
         if len(flags_with_improvement) == 0:
             break
 
         # If the first flag really is better than the current best, then
         # immediately invert it and remove it from further consideration
-        test_flag, run_result = flags_with_improvement[0]
+        test_flag, test_run_id, run_result = flags_with_improvement[0]
         if run_result < curr_result:
             assert test_flag in curr_flags
             flag_index = curr_flags.index(test_flag)
             curr_flags[flag_index] = '-fno-' + test_flag[2:]
+            curr_result = run_result
+            print ('CE: (best) id: ' + str(test_run_id) + ' result: ' + str(curr_result) + ' flags: ' + ' '.join(curr_flags))
             flags_to_consider.remove(test_flag)
             flags_with_improvement = flags_with_improvement[1:]
 
         # Keep disabling flags which previously gave an improvement
         # in turn until we stop seeing an improvement
-        for flag, _ in flags_with_improvement:
+        for flag, _, _ in flags_with_improvement:
             run_flags = list(curr_flags)
 
             # Flip the flag to have a -fno- prefix
@@ -419,6 +423,7 @@ def combined_elimination(src_dir, run_dir, cc, cxx, fort,
                                            [build_flags, base_opt] + run_flags,
                                            [exec_flags],
                                            debug)
+            print ('CE: (test) id: ' + str(test_run_id) + ' result: ' + str(run_result) + ' flag: ' + flag)
             run_id += 1
 
             if run_result <= 0:
@@ -431,6 +436,7 @@ def combined_elimination(src_dir, run_dir, cc, cxx, fort,
                 # disable it and remove it from further consideration
                 curr_flags = run_flags
                 curr_result = run_result
+                print ('CE: (best) id: ' + str(test_run_id) + ' result: ' + str(curr_result) + ' flags: ' + ' '.join(curr_flags))
                 flags_to_consider.remove(flag)
 
                 # Another iteration of combined elimination is necessary
