@@ -89,7 +89,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
   if (MAGEEC_DEBUG)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3 \
--Werror -Wall -Wextra -Wno-literal-suffix")
+-Werror -Wall -Wextra -Wno-literal-suffix -Wno-error=attributes")
   endif ()
 
 else ()
