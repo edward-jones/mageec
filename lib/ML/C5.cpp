@@ -677,7 +677,7 @@ C5Driver::train(std::set<FeatureDesc> feature_descs,
     int seed = 0xbeef;
     int noGlobalPruning = 0;
     double CF = 0.25;
-    int minCases = 2;
+    int minCases = 1;
     int fuzzyThreshold = 0;
     int earlyStopping = 1;
     // output parameters

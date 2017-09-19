@@ -1,5 +1,10 @@
 2017-09-19  Edward Jones  <ed.jones@embecosm.com>
 
+	* lib/ML/C5.cpp (C5Driver::train): Set minCases to 1 instead
+	of the default 2.
+
+2017-09-19  Edward Jones  <ed.jones@embecosm.com>
+
 	* lib/ML/1NN.cpp (OneNN::makeDecision): Fix nearest neighbor
 	query.
 
