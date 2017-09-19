@@ -128,8 +128,8 @@ OneNN::makeDecision(const DecisionRequestBase &request,
   for (auto point : feature_points) {
     // calculate the distance between the query point and this point. If
     // any feature is missing, then just ignore it.
+    double squared_distance = 0.0;
     for (auto query_feature : query_features) {
-      double squared_distance = 0.0;
       if (point.features.count(query_feature.first)) {
         double value = point.features[query_feature.first];
         double query_value = query_feature.second;
@@ -137,10 +137,10 @@ OneNN::makeDecision(const DecisionRequestBase &request,
         double squared_diff = diff * diff;
         squared_distance += squared_diff;
       }
-      if (squared_distance < min_squared_distance) {
-        min_squared_distance = squared_distance;
-        nearest_neighbor = point;
-      }
+    }
+    if (squared_distance < min_squared_distance) {
+      min_squared_distance = squared_distance;
+      nearest_neighbor = point;
     }
   }
 
